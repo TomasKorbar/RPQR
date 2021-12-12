@@ -1,8 +1,6 @@
-from typing import Type
 from rpqr.loader.plugins.library import RPQRBasePlugin
 
 class RPQRDataPlugin(RPQRBasePlugin):
-    desiredType: Type = None
     desiredName: str = None
 
     def fillData(self, id, pkg, graph):
