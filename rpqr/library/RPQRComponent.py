@@ -2,6 +2,7 @@ import sys
 import os
 import importlib
 
+
 class RPQRComponent:
     def __init__(self, pluginDirectories):
         self.pluginDirectories = pluginDirectories

@@ -7,7 +7,7 @@ from rpqr.library import RPQRComponent
 
 
 class RPQRLoader(RPQRComponent):
-    def __init__(self, pluginDirs: list ,repositories: list):
+    def __init__(self, pluginDirs: list, repositories: list):
         super().__init__(pluginDirs)
         self.repositories = repositories
 

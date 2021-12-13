@@ -8,7 +8,7 @@ class RPQRDependencyPlugin(RPQRRelationPlugin):
         if self.optionalDataStructure == None:
             self.optionalDataStructure = {}
             for (node, attribs) in graph.nodes.items():
-                self.optionalDataStructure[attribs["Name"]] = node
+                self.optionalDataStructure[attribs["name"]] = node
 
         edges = list()
         requiredPackages = query.filter(provides=pkg.requires).run()

@@ -1,6 +1,7 @@
 from rpqr.loader.plugins.library import RPQRBasePlugin
 import networkx
 
+
 class RPQRRelationPlugin(RPQRBasePlugin):
     desiredName = None
     optionalDataStructure = None
@@ -9,7 +10,8 @@ class RPQRRelationPlugin(RPQRBasePlugin):
         targetList = self.prepareData(pkg, graph, query)
         for (target, direction) in targetList:
             if direction is not None:
-                graph.add_edge(id, target, type=self.desiredName, direction=target)
+                graph.add_edge(
+                    id, target, type=self.desiredName, direction=target)
             else:
                 graph.add_edge(id, target, type=self.desiredName)
 
