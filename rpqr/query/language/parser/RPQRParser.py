@@ -1,4 +1,4 @@
-from rpqr.library import RPQRComponent
+from rpqr.library.RPQRConfiguration import RPQRConfiguration
 from rpqr.query.commands.RPQRFilteringCommand import RPQRFilteringCommand
 from rpqr.loader.plugins.library.RPQRBasePlugin import RPQRBasePlugin
 from rpqr.query.language.scanner import RPQRScanner
@@ -7,34 +7,34 @@ from rpqr.query.language.parser import RPQRStackSymbol
 import logging
 
 
-class RPQRParser(RPQRComponent):
-    def __init__(self, pluginDirectories):
-        super().__init__(pluginDirectories)
+class RPQRParser:
+    def __init__(self, config: RPQRConfiguration):
+        self.config = config
         self.stack = []
 
-        self.nonTerminalTypes = {"statement": RPQRScanner.commandIndex}
+        self.nonTerminalTypes = {"statement": config.commandIndex}
 
-        self.rules = [[RPQRScanner.tokenTypes["leftBracelet"],
+        self.rules = [[config.tokenTypes["leftBracelet"],
                        self.nonTerminalTypes["statement"],
-                       RPQRScanner.tokenTypes["rightBracelet"]],
+                       config.tokenTypes["rightBracelet"]],
                       [self.nonTerminalTypes["statement"],
-                       RPQRScanner.tokenTypes["and"],
+                       config.tokenTypes["and"],
                        self.nonTerminalTypes["statement"]],
                       [self.nonTerminalTypes["statement"],
-                       RPQRScanner.tokenTypes["or"],
+                       config.tokenTypes["or"],
                        self.nonTerminalTypes["statement"]]
                       ]
 
-        for plugin in self.plugins:
+        for plugin in config.plugins:
             plugin: RPQRBasePlugin
             for command in plugin.implementedCommands:
                 command: RPQRFilteringCommand
-                rule = [RPQRScanner.commandTypes[command.name]]
+                rule = [config.commandTypes[command.name]]
                 for arg in command.args:
                     if arg == str:
-                        rule.append(RPQRScanner.tokenTypes["string"])
+                        rule.append(config.tokenTypes["string"])
                     elif arg == int:
-                        rule.append(RPQRScanner.tokenTypes["number"])
+                        rule.append(config.tokenTypes["number"])
                 self.rules.append(rule)
 
         self.callbacks = [self._collapseBraceletStatement,
@@ -61,51 +61,51 @@ class RPQRParser(RPQRComponent):
 
     def parseTokens(self, tokens: list):
         self.stack = []
-        self.stack.append(RPQRStackSymbol(RPQRScanner.tokenTypes["end"]))
+        self.stack.append(RPQRStackSymbol(self.config.tokenTypes["end"]))
         lastTerminalIndex = 0
         curInput = tokens.pop(0)
 
-        leftBraceletRow = {RPQRScanner.tokenTypes["leftBracelet"]: RPQRPrecedentCommands.LOADMORE,
-                           RPQRScanner.tokenTypes["rightBracelet"]: RPQRPrecedentCommands.CONTINUE,
-                           RPQRScanner.tokenTypes["and"]: RPQRPrecedentCommands.LOADMORE,
-                           RPQRScanner.tokenTypes["or"]: RPQRPrecedentCommands.LOADMORE,
-                           RPQRScanner.tokenTypes["end"]: RPQRPrecedentCommands.ERROR
+        leftBraceletRow = {self.config.tokenTypes["leftBracelet"]: RPQRPrecedentCommands.LOADMORE,
+                           self.config.tokenTypes["rightBracelet"]: RPQRPrecedentCommands.CONTINUE,
+                           self.config.tokenTypes["and"]: RPQRPrecedentCommands.LOADMORE,
+                           self.config.tokenTypes["or"]: RPQRPrecedentCommands.LOADMORE,
+                           self.config.tokenTypes["end"]: RPQRPrecedentCommands.ERROR
                            }
-        rightBraceletRow = {RPQRScanner.tokenTypes["leftBracelet"]: RPQRPrecedentCommands.ERROR,
-                            RPQRScanner.tokenTypes["rightBracelet"]: RPQRPrecedentCommands.COLLAPSE,
-                            RPQRScanner.tokenTypes["and"]: RPQRPrecedentCommands.COLLAPSE,
-                            RPQRScanner.tokenTypes["or"]: RPQRPrecedentCommands.COLLAPSE,
-                            RPQRScanner.tokenTypes["end"]: RPQRPrecedentCommands.COLLAPSE
+        rightBraceletRow = {self.config.tokenTypes["leftBracelet"]: RPQRPrecedentCommands.ERROR,
+                            self.config.tokenTypes["rightBracelet"]: RPQRPrecedentCommands.COLLAPSE,
+                            self.config.tokenTypes["and"]: RPQRPrecedentCommands.COLLAPSE,
+                            self.config.tokenTypes["or"]: RPQRPrecedentCommands.COLLAPSE,
+                            self.config.tokenTypes["end"]: RPQRPrecedentCommands.COLLAPSE
                             }
-        andRow = {RPQRScanner.tokenTypes["leftBracelet"]: RPQRPrecedentCommands.LOADMORE,
-                  RPQRScanner.tokenTypes["rightBracelet"]: RPQRPrecedentCommands.COLLAPSE,
-                  RPQRScanner.tokenTypes["and"]: RPQRPrecedentCommands.COLLAPSE,
-                  RPQRScanner.tokenTypes["or"]: RPQRPrecedentCommands.COLLAPSE,
-                  RPQRScanner.tokenTypes["end"]: RPQRPrecedentCommands.COLLAPSE
+        andRow = {self.config.tokenTypes["leftBracelet"]: RPQRPrecedentCommands.LOADMORE,
+                  self.config.tokenTypes["rightBracelet"]: RPQRPrecedentCommands.COLLAPSE,
+                  self.config.tokenTypes["and"]: RPQRPrecedentCommands.COLLAPSE,
+                  self.config.tokenTypes["or"]: RPQRPrecedentCommands.COLLAPSE,
+                  self.config.tokenTypes["end"]: RPQRPrecedentCommands.COLLAPSE
                   }
-        orRow = {RPQRScanner.tokenTypes["leftBracelet"]: RPQRPrecedentCommands.LOADMORE,
-                 RPQRScanner.tokenTypes["rightBracelet"]: RPQRPrecedentCommands.COLLAPSE,
-                 RPQRScanner.tokenTypes["and"]: RPQRPrecedentCommands.LOADMORE,
-                 RPQRScanner.tokenTypes["or"]: RPQRPrecedentCommands.COLLAPSE,
-                 RPQRScanner.tokenTypes["end"]: RPQRPrecedentCommands.COLLAPSE
+        orRow = {self.config.tokenTypes["leftBracelet"]: RPQRPrecedentCommands.LOADMORE,
+                 self.config.tokenTypes["rightBracelet"]: RPQRPrecedentCommands.COLLAPSE,
+                 self.config.tokenTypes["and"]: RPQRPrecedentCommands.LOADMORE,
+                 self.config.tokenTypes["or"]: RPQRPrecedentCommands.COLLAPSE,
+                 self.config.tokenTypes["end"]: RPQRPrecedentCommands.COLLAPSE
                  }
-        endRow = {RPQRScanner.tokenTypes["leftBracelet"]: RPQRPrecedentCommands.LOADMORE,
-                  RPQRScanner.tokenTypes["rightBracelet"]: RPQRPrecedentCommands.ERROR,
-                  RPQRScanner.tokenTypes["and"]: RPQRPrecedentCommands.LOADMORE,
-                  RPQRScanner.tokenTypes["or"]: RPQRPrecedentCommands.LOADMORE,
-                  RPQRScanner.tokenTypes["end"]: RPQRPrecedentCommands.SUCCESS
+        endRow = {self.config.tokenTypes["leftBracelet"]: RPQRPrecedentCommands.LOADMORE,
+                  self.config.tokenTypes["rightBracelet"]: RPQRPrecedentCommands.ERROR,
+                  self.config.tokenTypes["and"]: RPQRPrecedentCommands.LOADMORE,
+                  self.config.tokenTypes["or"]: RPQRPrecedentCommands.LOADMORE,
+                  self.config.tokenTypes["end"]: RPQRPrecedentCommands.SUCCESS
                   }
 
         precedencTable = {
-            RPQRScanner.tokenTypes["leftBracelet"]: leftBraceletRow,
-            RPQRScanner.tokenTypes["rightBracelet"]: rightBraceletRow,
-            RPQRScanner.tokenTypes["and"]: andRow,
-            RPQRScanner.tokenTypes["or"]: orRow,
-            RPQRScanner.tokenTypes["end"]: endRow
+            self.config.tokenTypes["leftBracelet"]: leftBraceletRow,
+            self.config.tokenTypes["rightBracelet"]: rightBraceletRow,
+            self.config.tokenTypes["and"]: andRow,
+            self.config.tokenTypes["or"]: orRow,
+            self.config.tokenTypes["end"]: endRow
         }
 
         while True:
-            if curInput.type in RPQRScanner.commandTypes.values():
+            if curInput.type in self.config.commandTypes.values():
                 commandRule = None
                 for rule in self.rules[3:]:
                     if rule[0] == curInput.type:
@@ -124,7 +124,7 @@ class RPQRParser(RPQRComponent):
                 continue
             lastTerminalIndex = 0
             for i, e in reversed(list(enumerate(self.stack))):
-                if e.type in RPQRScanner.tokenTypes.values():
+                if e.type in self.config.tokenTypes.values():
                     lastTerminalIndex = i
                     break
 
@@ -136,7 +136,7 @@ class RPQRParser(RPQRComponent):
                 return self.stack[1]
             elif requiredAction == RPQRPrecedentCommands.LOADMORE:
                 self.stack.insert(
-                    lastTerminalIndex+1, RPQRStackSymbol(RPQRScanner.tokenTypes["loadMore"]))
+                    lastTerminalIndex+1, RPQRStackSymbol(self.config.tokenTypes["loadMore"]))
                 self.stack.append(RPQRStackSymbol(curInput.type))
                 curInput = tokens.pop(0)
             elif requiredAction == RPQRPrecedentCommands.CONTINUE:
@@ -145,7 +145,7 @@ class RPQRParser(RPQRComponent):
             elif requiredAction == RPQRPrecedentCommands.COLLAPSE:
                 toCollapse = []
                 for member in reversed(self.stack):
-                    if member.type is not RPQRScanner.tokenTypes["loadMore"]:
+                    if member.type is not self.config.tokenTypes["loadMore"]:
                         toCollapse.insert(0, member)
                     else:
                         break

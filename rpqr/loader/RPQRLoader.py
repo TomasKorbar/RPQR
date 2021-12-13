@@ -1,15 +1,15 @@
 import dnf
 import networkx
+from rpqr.library import RPQRConfiguration
 
 from rpqr.loader.plugins.library.RPQRDataPlugin import RPQRDataPlugin
 from rpqr.loader.plugins.library.RPQRRelationPlugin import RPQRRelationPlugin
-from rpqr.library import RPQRComponent
 
 
-class RPQRLoader(RPQRComponent):
-    def __init__(self, pluginDirs: list, repositories: list):
-        super().__init__(pluginDirs)
-        self.repositories = repositories
+class RPQRLoader:
+    def __init__(self, config : RPQRConfiguration):
+        self.repositories = config.repositories
+        self.plugins = config.plugins
 
     def createDatabase(self) -> networkx.MultiGraph:
         graph = networkx.MultiGraph()

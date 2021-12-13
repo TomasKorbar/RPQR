@@ -1,1 +1,2 @@
 from .RPQRComponent import RPQRComponent
+from .RPQRConfiguration import RPQRConfiguration

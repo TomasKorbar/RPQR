@@ -1,22 +1,15 @@
-from rpqr.library import RPQRComponent
+from rpqr.library.RPQRConfiguration import RPQRConfiguration
 from rpqr.loader.plugins.library.RPQRBasePlugin import RPQRBasePlugin
 from rpqr.query.commands.RPQRFilteringCommand import RPQRFilteringCommand
 from rpqr.query.language.parser import RPQRStackSymbol
 from rpqr.query.language.scanner import RPQRToken
-import networkx 
+from rpqr.query.language.interpreter import RPQRResultTree
+import networkx
 
-class RPQRResultTree:
-    def __init__(self, result, left, right):
-        self.left = left
-        self.right = right
-        self.result = result
-
-class RPQRInterpreter(RPQRComponent):
-
-    def __init__(self, pluginDirectories):
-        super().__init__(pluginDirectories)
+class RPQRInterpreter:
+    def __init__(self, config : RPQRConfiguration):
         self.commandNameToClass = {}
-        for plugin in self.plugins:
+        for plugin in config.plugins:
             plugin : RPQRBasePlugin
             for command in plugin.implementedCommands:
                 command : RPQRFilteringCommand

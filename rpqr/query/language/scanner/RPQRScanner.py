@@ -2,9 +2,7 @@ from enum import Enum
 import logging
 from typing import Optional
 
-from rpqr.library.RPQRComponent import RPQRComponent
-from rpqr.loader.plugins.library.RPQRBasePlugin import RPQRBasePlugin
-from rpqr.query.commands.RPQRFilteringCommand import RPQRFilteringCommand
+from rpqr.library.RPQRConfiguration import RPQRConfiguration
 from rpqr.query.language.scanner import RPQRToken
 
 
@@ -21,21 +19,11 @@ class States(Enum):
     RIGHTBRACELET = 9
 
 
-class RPQRScanner(RPQRComponent):
-    tokenTypes = {"leftBracelet": 0, "rightBracelet": 1, "and": 3, "or": 4,
-                  "number": 5, "string": 6, "command": 7, "end": 8, "loadMore": 9, "collapse": 10}
-    commandTypes = {}
-    allowedSpecialCharacters = ['&', '|', '-', '.']
-    commandIndex = 11
-
-    def __init__(self, pluginDirectories):
-        super().__init__(pluginDirectories)
-        for plugin in self.plugins:
-            plugin: RPQRBasePlugin
-            for command in plugin.implementedCommands:
-                command: RPQRFilteringCommand
-                RPQRScanner.commandTypes[command.name] = self.commandIndex
-                RPQRScanner.commandIndex += 1
+class RPQRScanner:
+    def __init__(self, config: RPQRConfiguration):
+        self.tokenTypes = config.tokenTypes
+        self.commandTypes = config.commandTypes
+        self.allowedSpecialCharacters = config.allowedSpecialCharacters
 
     def getTokens(self, input: str) -> Optional[list]:
         tokens = list()
