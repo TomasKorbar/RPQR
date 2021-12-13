@@ -14,12 +14,24 @@ class NameFilter(RPQRFilteringCommand):
                 nodes.append(node)
                 break
 
-        return graph.subgraph(nodes)
+        return nodes
+
+class NameLikeFilter(RPQRFilteringCommand):
+    args = [str]
+    name = "NAMELIKE"
+    def execute(graph : networkx.MultiGraph, args: list):
+        targetName = args[0]
+        nodes = []
+        for (node, attrs) in graph.nodes.items():
+            if targetName in attrs["name"]:
+                nodes.append(node)
+        
+        return nodes
 
 class RPQRNamePlugin(RPQRDataPlugin):
     desiredName = "name"
     
-    implementedCommands = [NameFilter]
+    implementedCommands = [NameFilter, NameLikeFilter]
 
     def prepareData(self, pkg):
         return str(pkg)
