@@ -5,6 +5,7 @@ from typing import Optional
 from rpqr.library.RPQRComponent import RPQRComponent
 from rpqr.loader.plugins.library.RPQRBasePlugin import RPQRBasePlugin
 from rpqr.query.Commands.RPQRFilteringCommand import RPQRFilteringCommand
+from rpqr.query.scanner import RPQRToken
 
 class States(Enum):
     START = 0
@@ -18,19 +19,11 @@ class States(Enum):
     LEFTBRACELET = 8
     RIGHTBRACELET = 9
 
-class Token:
-    def __init__(self, type : int = None, content : str = ""):
-        self.type = type
-        self.content = content
-
-    def appendToContent(self, what : str):
-        self.content += what
-
 class RPQRScanner(RPQRComponent):
-    tokenTypes = {"leftBracelet": 0, "rightBracelet": 1,"and": 3, "or": 4, "number": 5, "string": 6, "command": 7}
+    tokenTypes = {"leftBracelet": 0, "rightBracelet": 1,"and": 3, "or": 4, "number": 5, "string": 6, "command": 7, "end": 8, "loadMore": 9, "collapse" : 10}
     commandTypes = {}
     allowedSpecialCharacters = ['&', '|', '-', '.']
-    commandIndex = 8
+    commandIndex = 11
     
     def __init__(self, pluginDirectories):
         super().__init__(pluginDirectories)
@@ -38,12 +31,12 @@ class RPQRScanner(RPQRComponent):
             plugin : RPQRBasePlugin
             for command in plugin.implementedCommands:
                 command : RPQRFilteringCommand
-                self.commandTypes[command.name] = self.commandIndex
-                self.commandIndex += 1
+                RPQRScanner.commandTypes[command.name] = self.commandIndex
+                RPQRScanner.commandIndex += 1
 
     def getTokens(self, input : str) -> Optional[list]:
         tokens = list()
-        curToken = Token()
+        curToken = RPQRToken()
         curState = States.START
         curInputIndex = 0
         while curInputIndex < len(input) + 1:
@@ -55,25 +48,25 @@ class RPQRScanner(RPQRComponent):
                 if c == '':
                     break
                 elif c == '(':
-                    curToken = Token(self.tokenTypes["leftBracelet"], c)
+                    curToken = RPQRToken(self.tokenTypes["leftBracelet"], c)
                     curState = States.LEFTBRACELET
                 elif c == ')':
-                    curToken = Token(self.tokenTypes["rightBracelet"], c)
+                    curToken = RPQRToken(self.tokenTypes["rightBracelet"], c)
                     curState = States.RIGHTBRACELET
                 elif c == '&':
-                    curToken = Token(self.tokenTypes["and"], c)
+                    curToken = RPQRToken(self.tokenTypes["and"], c)
                     curState = States.AND
                 elif c == '|':
-                    curToken = Token(self.tokenTypes["or"], c)
+                    curToken = RPQRToken(self.tokenTypes["or"], c)
                     curState = States.OR
                 elif c == '\'':
-                    curToken = Token(self.tokenTypes["string"], '')
+                    curToken = RPQRToken(self.tokenTypes["string"], '')
                     curState = States.STARTSTRING
                 elif c.isnumeric():
-                    curToken = Token(self.tokenTypes["number"], c)
+                    curToken = RPQRToken(self.tokenTypes["number"], c)
                     curState = States.NUMBER
                 elif c.isalpha():
-                    curToken = Token(self.tokenTypes["command"], c)
+                    curToken = RPQRToken(self.tokenTypes["command"], c)
                     curState = States.COMMAND
                 elif not c.isspace():
                     logging.error("Lexical error while reading new token near %s in column %s" % (c, curInputIndex))
@@ -132,4 +125,5 @@ class RPQRScanner(RPQRComponent):
             elif curState == States.RIGHTBRACELET:
                 tokens.append(curToken)
                 curState = States.START
+        tokens.append(RPQRToken(self.tokenTypes["end"]))
         return tokens
