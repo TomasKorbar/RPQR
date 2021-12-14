@@ -12,13 +12,15 @@ if __name__ == "__main__":
     graph = loader.createDatabase()
     scnr = RPQRScanner(config)
     parser = RPQRParser(config)
-    tokens = scnr.getTokens("NAMELIKE 'cups' & NAMELIKE 'devel'")
+    tokens = scnr.getTokens("DEPENDSON 'cups-lpd-1:2.2.6-38.el8.x86_64' 1")
     AST = parser.parseTokens(tokens)
     interpreter = RPQRInterpreter(config)
     result = interpreter.performCommands(graph, AST)
     labelDict = {}
     for nodeId in result:
         labelDict[nodeId] = graph.nodes[nodeId]["name"]
-    networkx.draw(result, with_labels = True, labels=labelDict)
+    pos = networkx.spring_layout(result)
+
+    networkx.draw(result, pos=pos, with_labels = True, labels=labelDict)
     plt.show()
     print("finish")

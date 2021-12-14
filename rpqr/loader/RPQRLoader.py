@@ -12,7 +12,7 @@ class RPQRLoader:
         self.plugins = config.plugins
 
     def createDatabase(self) -> networkx.MultiGraph:
-        graph = networkx.MultiGraph()
+        graph = networkx.MultiDiGraph()
         base = dnf.Base()
         for (name, url) in self.repositories:
             base.repos.add_new_repo(name, base.conf, baseurl=[url])
