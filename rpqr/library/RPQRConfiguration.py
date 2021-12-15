@@ -12,10 +12,10 @@ class RPQRConfiguration:
         self.repositories = repositories
 
         self.tokenTypes = {"leftBracelet": 0, "rightBracelet": 1, "and": 3, "or": 4,
-                "number": 5, "string": 6, "command": 7, "end": 8, "loadMore": 9, "collapse": 10}
+                "number": 5, "string": 6, "command": 7, "end": 8, "loadMore": 9, "collapse": 10, "not": 11, "comma": 12}
         self.commandTypes = {}
         self.allowedSpecialCharacters = ['&', '|', '-', '.', ':','_']
-        self.commandIndex = 11
+        self.commandIndex = len(self.tokenTypes)+1
         for plugin in self.plugins:
             plugin: RPQRBasePlugin
             for command in plugin.implementedCommands:

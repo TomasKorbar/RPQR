@@ -17,6 +17,8 @@ class States(Enum):
     ENDSTRING = 7
     LEFTBRACELET = 8
     RIGHTBRACELET = 9
+    NOT = 10
+    COMMA = 11
 
 
 class RPQRScanner:
@@ -53,6 +55,12 @@ class RPQRScanner:
                 elif c == '\'':
                     curToken = RPQRToken(self.tokenTypes["string"], '')
                     curState = States.STARTSTRING
+                elif c == '~':
+                    curToken = RPQRToken(self.tokenTypes["not"], c)
+                    curState = States.NOT
+                elif c == ',':
+                    curToken = RPQRToken(self.tokenTypes["comma"], c)
+                    curState = States.COMMA
                 elif c.isnumeric():
                     curToken = RPQRToken(self.tokenTypes["number"], c)
                     curState = States.NUMBER
@@ -73,10 +81,10 @@ class RPQRScanner:
             elif curState == States.NUMBER:
                 if c.isnumeric():
                     curToken.appendToContent(c)
+                    curInputIndex += 1
                 else:
                     tokens.append(curToken)
                     curState = States.START
-                curInputIndex += 1
             elif curState == States.COMMAND:
                 if c.isalpha():
                     curToken.appendToContent(c)
@@ -118,6 +126,12 @@ class RPQRScanner:
                 tokens.append(curToken)
                 curState = States.START
             elif curState == States.RIGHTBRACELET:
+                tokens.append(curToken)
+                curState = States.START
+            elif curState == States.NOT:
+                tokens.append(curToken)
+                curState = States.START
+            elif curState == States.COMMA:
                 tokens.append(curToken)
                 curState = States.START
         tokens.append(RPQRToken(self.tokenTypes["end"]))

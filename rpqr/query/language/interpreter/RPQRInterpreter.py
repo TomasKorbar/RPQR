@@ -6,60 +6,86 @@ from rpqr.query.language.scanner import RPQRToken
 from rpqr.query.language.interpreter import RPQRResultTree
 import networkx
 
+
 class RPQRInterpreter:
-    def __init__(self, config : RPQRConfiguration):
+    def __init__(self, config: RPQRConfiguration):
         self.commandNameToClass = {}
         for plugin in config.plugins:
-            plugin : RPQRBasePlugin
+            plugin: RPQRBasePlugin
             for command in plugin.implementedCommands:
-                command : RPQRFilteringCommand
+                command: RPQRFilteringCommand
                 self.commandNameToClass[command.name] = command
 
-    def performCommands(self, graph : networkx.MultiGraph, AST: RPQRStackSymbol):
+    def performCommands(self, graph: networkx.MultiGraph, AST: RPQRStackSymbol):
         # (result, symbol)
         stack = []
         resultStack = []
-        curNode : RPQRStackSymbol = AST
-        curResult : RPQRResultTree = RPQRResultTree(None, None, None)
+        curNode: RPQRStackSymbol = AST
+        curResult: RPQRResultTree = RPQRResultTree(None, [])
         stack.append(curNode)
         resultStack.append(curResult)
         while len(stack) > 0:
             curNode = stack[-1]
             curResult = resultStack[-1]
             if curNode.operator is not None:
-                if curResult.left is None:
-                    curResult.left = RPQRResultTree(None, None, None)
-                    resultStack.append(curResult.left)
-                    curResult = curResult.left
+                if len(curResult.childResults) < 1:
+                    leftResult = RPQRResultTree(None, [])
+                    curResult.childResults.append(leftResult)
+                    resultStack.append(leftResult)
+                    curResult = leftResult
                     curNode = curNode.children[0]
                     stack.append(curNode)
-                elif curResult.right is None:
-                    curResult.right = RPQRResultTree(None, None, None)
-                    resultStack.append(curResult.right)
-                    curResult= curResult.right
+                elif curNode.operator != '~' and len(curResult.childResults) < 2:
+                    rightResult = RPQRResultTree(None, [])
+                    curResult.childResults.append(rightResult)
+                    resultStack.append(rightResult)
+                    curResult = rightResult
                     curNode = curNode.children[1]
                     stack.append(curNode)
                 else:
-                    leftNodes : networkx.MultiGraph = curResult.left.result
-                    rightNodes : networkx.MultiGraph = curResult.right.result
                     validNodes = []
                     if curNode.operator == '&':
-                        validNodes = [a for a in list(leftNodes) if a in list(rightNodes)]
+                        validNodes = [
+                            a for a in curResult.childResults[0].result if a in curResult.childResults[1].result]
                     elif curNode.operator == '|':
-                        validNodes = leftNodes
-                        for b in list(rightNodes):
+                        validNodes = curResult.childResults[0].result
+                        for b in curResult.childResults[1].result:
                             if b not in validNodes:
                                 validNodes.append(b)
-
+                    elif curNode.operator == '~':
+                        validNodes = [
+                            a for a in list(graph.nodes) if a not in curResult.childResults[0].result]
                     curResult.result = validNodes
                     stack.pop()
                     resultStack.pop()
             else:
-                commandToken : RPQRToken = curNode.children[0]
+                commandToken: RPQRToken = curNode.children[0]
                 commandClass = self.commandNameToClass[commandToken.content]
+                commandClass : RPQRFilteringCommand
+                notResolvedStatementFound = False
+                for argIndex, argType in enumerate(commandClass.args):
+                    if argType == str or argType == int:
+                        if (argIndex > len(curResult.childResults)-1):
+                            curResult.childResults.append(RPQRResultTree(curNode.children[1:][argIndex].content, []))
+                        else:
+                            continue
+                    elif argType == list:
+                        if (argIndex > len(curResult.childResults)-1):
+                            subStatementResult = RPQRResultTree(None, [])
+                            curResult.childResults.append(subStatementResult)
+                            resultStack.append(subStatementResult)
+                            curResult = subStatementResult
+                            curNode = curNode.children[1:][argIndex]
+                            stack.append(curNode)
+                            notResolvedStatementFound = True
+                            break
+                        else:
+                            continue
+                if notResolvedStatementFound:
+                    continue
                 arguments = []
-                for token in curNode.children[1:]:
-                    arguments.append(token.content)
+                for partResult in curResult.childResults:
+                    arguments.append(partResult.result)
                 curResult.result = commandClass.execute(graph, arguments)
                 stack.pop()
                 resultStack.pop()
