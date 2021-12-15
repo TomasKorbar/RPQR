@@ -1,3 +1,9 @@
+'''
+Project: RPQR
+Author: Tomáš Korbař (tomas.korb@seznam.cz)
+Copyright 2021 - 2021 Tomáš Korbař
+'''
+
 import dnf
 import networkx
 from rpqr.library import RPQRConfiguration

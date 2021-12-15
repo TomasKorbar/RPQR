@@ -1,3 +1,9 @@
+'''
+Project: RPQR
+Author: Tomáš Korbař (tomas.korb@seznam.cz)
+Copyright 2021 - 2021 Tomáš Korbař
+'''
+
 from rpqr.library.RPQRConfiguration import RPQRConfiguration
 from rpqr.query.commands.RPQRFilteringCommand import RPQRFilteringCommand
 from rpqr.loader.plugins.library.RPQRBasePlugin import RPQRBasePlugin

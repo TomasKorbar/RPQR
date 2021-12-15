@@ -1,10 +1,14 @@
-import networkx
+'''
+Project: RPQR
+Author: Tomáš Korbař (tomas.korb@seznam.cz)
+Copyright 2021 - 2021 Tomáš Korbař
+'''
+
 from rpqr.library.RPQRConfiguration import RPQRConfiguration
 from rpqr.loader import RPQRLoader
 from rpqr.query.language.interpreter import RPQRInterpreter
 from rpqr.query.language.parser import RPQRParser
 from rpqr.query.language.scanner import RPQRScanner
-import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     config = RPQRConfiguration(["/home/tkorbar/development/rpqr/rpqr/loader/plugins/implementations"],

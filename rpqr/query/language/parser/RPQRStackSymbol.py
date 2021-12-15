@@ -1,3 +1,9 @@
+'''
+Project: RPQR
+Author: Tomáš Korbař (tomas.korb@seznam.cz)
+Copyright 2021 - 2021 Tomáš Korbař
+'''
+
 class RPQRStackSymbol:
     def __init__(self, type, children: list = [], operator: str = None):
         self.children = children

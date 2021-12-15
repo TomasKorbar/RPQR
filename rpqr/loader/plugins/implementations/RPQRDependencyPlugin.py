@@ -1,3 +1,9 @@
+'''
+Project: RPQR
+Author: Tomáš Korbař (tomas.korb@seznam.cz)
+Copyright 2021 - 2021 Tomáš Korbař
+'''
+
 from rpqr.loader.plugins.library import RPQRRelationPlugin
 from networkx import MultiDiGraph
 from rpqr.query.commands import RPQRFilteringCommand
