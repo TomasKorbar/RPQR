@@ -2,6 +2,8 @@
 Author: Tomáš Korbař
 
 ## installation
+First you need to install python3-dnf package, because the module can be
+only installed through distribution package manager.
 ```
 $ pip install .
 ```
@@ -11,7 +13,7 @@ Currently there is implemented only one proof of concept.
 It can be executed after installation by:
 
 ```
-$ python3 -m rpqr.app.main
+$ RPQROrphaned
 ```
 
 Program prints out packages that are orphaned in fedora 33 and maintainers

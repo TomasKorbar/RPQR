@@ -7,6 +7,7 @@ Copyright 2021 - 2021 Tomáš Korbař
 from typing import List
 import networkx
 
+
 class RPQRFilteringCommand:
     """ Base class for commands
     """

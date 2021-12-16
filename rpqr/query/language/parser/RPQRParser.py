@@ -280,7 +280,7 @@ class RPQRParser:
         self.callbacks[matchedRuleIndex]()
         return True
 
-    def _cutSubstatement(self, tokens : List[RPQRToken], lastArg : bool) -> List[RPQRToken]:
+    def _cutSubstatement(self, tokens: List[RPQRToken], lastArg: bool) -> List[RPQRToken]:
         """ Get tokens related to this argument statement
 
         :param tokens: list of tokens

@@ -9,6 +9,7 @@ import networkx
 
 from rpqr.loader.plugins.library import RPQRBasePlugin
 
+
 class RPQRDataPlugin(RPQRBasePlugin):
     """ Base class for plugins which are inserting data into package nodes
     """
@@ -26,7 +27,7 @@ class RPQRDataPlugin(RPQRBasePlugin):
         """
         graph.nodes[id][self.desiredName] = self.prepareData(pkg)
 
-    def prepareData(self, pkg : hawkey.Package):
+    def prepareData(self, pkg: hawkey.Package):
         """ Method, provided by data plugins, which tells us value to save into node
 
         :param pkg: hawkey package object

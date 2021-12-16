@@ -32,6 +32,7 @@ class States(Enum):
 class RPQRScanner:
     """ Scanner of RPQR language.
     """
+
     def __init__(self, config: RPQRConfiguration) -> None:
         """ Create instance of RPQRScanner
 

@@ -16,6 +16,7 @@ import networkx
 class RPQRInterpreter:
     """ RPQR language interpreter
     """
+
     def __init__(self, config: RPQRConfiguration) -> None:
         """ Get RPQRInterpreter instance
 
@@ -94,7 +95,7 @@ class RPQRInterpreter:
                 # execute the command and close node
                 commandToken: RPQRToken = curNode.children[0]
                 commandClass = self.commandNameToClass[commandToken.content]
-                commandClass : RPQRFilteringCommand
+                commandClass: RPQRFilteringCommand
                 # if not resolved substatement is found then we need to stop resolution
                 # and return to this when it is resolved
                 # (we will resolve it immediately as next step)
@@ -103,7 +104,8 @@ class RPQRInterpreter:
                     if argType == str or argType == int:
                         # literals can be resolved right away
                         if (argIndex > len(curResult.childResults)-1):
-                            curResult.childResults.append(RPQRResultTree(curNode.children[1:][argIndex].content, []))
+                            curResult.childResults.append(RPQRResultTree(
+                                curNode.children[1:][argIndex].content, []))
                         else:
                             continue
                     elif argType == list:

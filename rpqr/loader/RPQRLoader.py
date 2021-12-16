@@ -16,7 +16,8 @@ from rpqr.loader.plugins.library.RPQRRelationPlugin import RPQRRelationPlugin
 class RPQRLoader:
     """ Class handling loading of repositories and building graphs
     """
-    def __init__(self, config : RPQRConfiguration) -> None:
+
+    def __init__(self, config: RPQRConfiguration) -> None:
         """ Create instance of RPQRLoader
 
         :param config: provided rpqr configuration
@@ -32,7 +33,7 @@ class RPQRLoader:
         :rtype: networkx.MultiDiGraph
         """
         graph = networkx.MultiDiGraph()
-        
+
         dataPlugins = [plugin for plugin in self.plugins if isinstance(
             plugin, RPQRDataPlugin)]
         relationPlugins = [plugin for plugin in self.plugins if isinstance(
