@@ -34,9 +34,6 @@ if __name__ == "__main__":
             print("%s " % maint, end="")
         print()
 
-
-
-
     """
 
     labelDict = {}
@@ -47,4 +44,3 @@ if __name__ == "__main__":
 
     plt.show()
     """
-    print("finish")
