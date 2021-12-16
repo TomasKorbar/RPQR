@@ -6,11 +6,15 @@ Author: Tomáš Korbař (tomas.korb@seznam.cz)
 Copyright 2021 - 2021 Tomáš Korbař
 '''
 
+import os
+import sys
+
 from rpqr.library.RPQRConfiguration import RPQRConfiguration
 from rpqr.loader import RPQRLoader
 from rpqr.query.language.interpreter import RPQRInterpreter
 from rpqr.query.language.parser import RPQRParser
 from rpqr.query.language.scanner import RPQRScanner
+import rpqr.loader.plugins.implementations
 
 """
 This is a proof of concept script which showes current state of implementation
@@ -24,8 +28,8 @@ faster. That is our goal.
 
 if __name__ == "__main__":
     # set up configuration
-    config = RPQRConfiguration(["/home/tkorbar/development/rpqr/rpqr/loader/plugins/implementations"],
-                               [("fedora-repo", "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/x86_64/os/")])
+    config = RPQRConfiguration([os.path.dirname(rpqr.loader.plugins.implementations.__file__)],
+                               [("fedora-repo", sys.argv[1])])
     loader = RPQRLoader(config)
     # parse information about packages
     graph = loader.createDatabase()

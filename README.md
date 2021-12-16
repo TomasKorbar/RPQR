@@ -13,7 +13,7 @@ Currently there is implemented only one proof of concept.
 It can be executed after installation by:
 
 ```
-$ RPQROrphaned
+$ RPQROrphaned "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/x86_64/os/"
 ```
 
 Program prints out packages that are orphaned in fedora 33 and maintainers
