@@ -10,30 +10,50 @@ from rpqr.query.language.interpreter import RPQRInterpreter
 from rpqr.query.language.parser import RPQRParser
 from rpqr.query.language.scanner import RPQRScanner
 
+"""
+This is a proof of concept script which showes current state of implementation
+and performs real life use case.
+mhroncok sends mail to fedora-devel mailing list once in a while to
+point out newly orphaned packages to maintainer which are affected by
+it becoming an orphan. Original script is written only for that purpose
+and takes a long time to execute. Thus make the whole process general and
+faster. That is our goal.
+"""
+
 if __name__ == "__main__":
+    # set up configuration
     config = RPQRConfiguration(["/home/tkorbar/development/rpqr/rpqr/loader/plugins/implementations"],
                                [("fedora-repo", "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/x86_64/os/")])
     loader = RPQRLoader(config)
+    # parse information about packages
     graph = loader.createDatabase()
     scnr = RPQRScanner(config)
     parser = RPQRParser(config)
     interpreter = RPQRInterpreter(config)
+    # get abstract syntax tree for first command
     AST = parser.parseTokens(scnr.getTokens("MAINTAINER('orphan')"))
+    # interpret first command
+    # we will get packages which are orphaned in fedora 33
     result = interpreter.performCommands(graph, AST)
     for node in list(result.nodes):
-        AST = parser.parseTokens(scnr.getTokens("WHATDEPENDSON('%s', 20)" % graph.nodes[node]["name"]))
+        # now we will recursively gather packages which depend on every orphaned package
+        AST = parser.parseTokens(scnr.getTokens(
+            "WHATDEPENDSON('%s', 20)" % graph.nodes[node]["name"]))
         dependentPackages = interpreter.performCommands(graph, AST)
+        # get maintainers affected by this change
         maintainerList = []
         for pkgId in list(dependentPackages.nodes):
             for maintainer in dependentPackages.nodes[pkgId]["maintainer"]:
                 if maintainer not in maintainerList:
                     maintainerList.append(maintainer)
+        # orphan is just a placeholder so remove it
         maintainerList.remove('orphan')
         print("%s => " % graph.nodes[node]["name"], end="")
         for maint in maintainerList:
             print("%s " % maint, end="")
         print()
 
+    # just some code stored for later implementation of visualization
     """
 
     labelDict = {}

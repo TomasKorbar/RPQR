@@ -6,13 +6,15 @@ Copyright 2021 - 2021 Tomáš Korbař
 
 from enum import Enum
 import logging
-from typing import Optional
+from typing import Optional, List
 
 from rpqr.library.RPQRConfiguration import RPQRConfiguration
 from rpqr.query.language.scanner import RPQRToken
 
 
 class States(Enum):
+    """ States of scanners FSM.
+    """
     START = 0
     AND = 1
     OR = 2
@@ -28,16 +30,31 @@ class States(Enum):
 
 
 class RPQRScanner:
-    def __init__(self, config: RPQRConfiguration):
+    """ Scanner of RPQR language.
+    """
+    def __init__(self, config: RPQRConfiguration) -> None:
+        """ Create instance of RPQRScanner
+
+        :param config: provided rpqr configuration
+        :type config: RPQRConfiguration
+        """
         self.tokenTypes = config.tokenTypes
         self.commandTypes = config.commandTypes
         self.allowedSpecialCharacters = config.allowedSpecialCharacters
 
-    def getTokens(self, input: str) -> Optional[list]:
-        tokens = list()
+    def getTokens(self, input: str) -> Optional[List[RPQRToken]]:
+        """ Get RPQR language tokens from string
+
+        :param input: input query
+        :type input: str
+        :return: list of RPQRToken objects
+        :rtype: Optional[List[RPQRToken]]
+        """
+        tokens = []
         curToken = RPQRToken()
         curState = States.START
         curInputIndex = 0
+        # typical FSM for scanning of input string
         while curInputIndex < len(input) + 1:
             if curInputIndex < len(input):
                 c = input[curInputIndex]

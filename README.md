@@ -1,4 +1,4 @@
-# RPQR project
+# RPQR (RPM Package Query Resolver) project
 Author: Tomáš Korbař
 
 ## installation

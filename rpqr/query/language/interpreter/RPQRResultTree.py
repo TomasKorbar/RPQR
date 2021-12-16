@@ -5,6 +5,8 @@ Copyright 2021 - 2021 Tomáš Korbař
 '''
 
 class RPQRResultTree:
-    def __init__(self, result, childResults):
+    """ Helper object for resolution of Abstract Syntactic Tree
+    """
+    def __init__(self, result, childResults) -> None:
         self.childResults = childResults
         self.result = result

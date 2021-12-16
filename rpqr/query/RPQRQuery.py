@@ -9,3 +9,5 @@ import networkx
 class RPQRQuery:
     def performQuery(query : str, graph: networkx.MultiGraph):
         pass
+
+#TODO: interface still needs to be implemented

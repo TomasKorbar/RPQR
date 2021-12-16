@@ -7,20 +7,41 @@ Copyright 2021 - 2021 Tomáš Korbař
 import os
 import sys
 import importlib
+from typing import List, Tuple
+
 from rpqr.loader.plugins.library import RPQRBasePlugin
 from rpqr.query.commands import RPQRFilteringCommand
 
+
 class RPQRConfiguration:
-    def __init__(self, pluginDirectories, repositories):
+    """
+    [summary]
+    Configuration class meant for loading plugins and setting
+    up query language configuration (types of terminal and non-terminal symbols).
+    """
+
+    def __init__(self, pluginDirectories: List[str], repositories: List[Tuple[str, str]]) -> None:
+        """[summary]
+
+        :param pluginDirectories: Directories containing plugin modules.
+        :type pluginDirectories: List[str]
+        :param repositories: list of tuples containing repository alias and URL.
+        :type repositories: List[Tuple[str, str]]
+        """
         self.pluginDirectories = pluginDirectories
         self.plugins = list()
         self._initializePlugins()
         self.repositories = repositories
-
+        # terminal symbols for our language
         self.tokenTypes = {"leftBracelet": 0, "rightBracelet": 1, "and": 3, "or": 4,
-                "number": 5, "string": 6, "command": 7, "end": 8, "loadMore": 9, "collapse": 10, "not": 11, "comma": 12}
+                           "number": 5, "string": 6, "command": 7, "end": 8, "loadMore": 9, "collapse": 10, "not": 11, "comma": 12}
+        # terminals starting commands
         self.commandTypes = {}
-        self.allowedSpecialCharacters = ['&', '|', '-', '.', ':','_', '~']
+        # special characters allowed in string literals
+        self.allowedSpecialCharacters = ['&', '|', '-', '.', ':', '_', '~']
+        # since we need to use additional non terminals in parser,
+        # we will make the index public to avoid any collision
+        # with existing symbols
         self.commandIndex = len(self.tokenTypes)+1
         for plugin in self.plugins:
             plugin: RPQRBasePlugin
@@ -30,12 +51,15 @@ class RPQRConfiguration:
                 self.commandIndex += 1
 
     def _initializePlugins(self):
+        """Load plugins from supplied directories
+        """
         for dir in self.pluginDirectories:
             sys.path.append(dir)
             pluginModules = os.listdir(dir)
 
         for file in pluginModules:
             moduleName = file[:-3]
+            # if file name starts with _ then it is most likely not a plugin
             if moduleName.startswith("_"):
                 continue
             module = importlib.import_module(moduleName)

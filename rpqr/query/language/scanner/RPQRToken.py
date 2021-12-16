@@ -4,10 +4,26 @@ Author: Tomáš Korbař (tomas.korb@seznam.cz)
 Copyright 2021 - 2021 Tomáš Korbař
 '''
 
+
 class RPQRToken:
-    def __init__(self, type : int = None, content : str = ""):
+    """ RPQR Language token
+    """
+
+    def __init__(self, type: int = None, content: str = "") -> None:
+        """ Create instance of RPQRToken
+
+        :param type: type of token, defaults to None
+        :type type: int, optional
+        :param content: data contained in this token, defaults to ""
+        :type content: str, optional
+        """
         self.type = type
         self.content = content
 
-    def appendToContent(self, what : str):
+    def appendToContent(self, what: str):
+        """ Add data to content
+
+        :param what: data
+        :type what: str
+        """
         self.content += what
