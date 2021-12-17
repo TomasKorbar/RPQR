@@ -62,7 +62,7 @@ class DependsOnUserFilter(RPQRFilteringCommand):
         nodes = [a for a in list(graph.nodes)
                  if targetUser in graph.nodes[a]["maintainer"]]
         for node in nodes:
-            graph.nodes[node]["depth"] = 0
+            graph.nodes[node]["depth"] = 1
         nodeIndex = 0
         # our well know BFS
         # TODO: investigate whether BFS and DFS could not be implemented

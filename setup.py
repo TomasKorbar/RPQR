@@ -12,6 +12,6 @@ setup(name='rpqr',
       author='Tomas Korbar',
       author_email='tkorbar@redhat.com',
       packages=['rpqr'],
-      install_requires=['networkx'],
-      scripts=["bin/RPQROrphaned"]
+      install_requires=['wheel', 'networkx'],
+      scripts=["bin/RPQROrphaned", "bin/RPQR"]
      )

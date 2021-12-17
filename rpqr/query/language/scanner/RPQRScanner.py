@@ -39,6 +39,7 @@ class RPQRScanner:
         :param config: provided rpqr configuration
         :type config: RPQRConfiguration
         """
+        self.logger = logging.getLogger("RPQRScanner")
         self.tokenTypes = config.tokenTypes
         self.commandTypes = config.commandTypes
         self.allowedSpecialCharacters = config.allowedSpecialCharacters
@@ -115,7 +116,7 @@ class RPQRScanner:
                     curInputIndex += 1
                 else:
                     if curToken.content not in self.commandTypes.keys():
-                        logging.error(
+                        self.logger.error(
                             "Lexical error command %s not implemented" % (curToken.content))
                         return None
                     curToken.type = self.commandTypes[curToken.content]
@@ -129,7 +130,7 @@ class RPQRScanner:
                 elif c == '\'':
                     curState = States.ENDSTRING
                 else:
-                    logging.error("Lexical error while reading string literal near %s in column %s missing '" % (
+                    self.logger.error("Lexical error while reading string literal near %s in column %s missing '" % (
                         c, curInputIndex))
                     return None
             elif curState == States.STRINGCONTENT:
@@ -139,7 +140,7 @@ class RPQRScanner:
                 elif c == '\'':
                     curState = States.ENDSTRING
                 else:
-                    logging.error("Lexical error while reading string literal near %s in column %s missing '" % (
+                    self.logger.error("Lexical error while reading string literal near %s in column %s missing '" % (
                         c, curInputIndex))
                     return None
             elif curState == States.ENDSTRING:

@@ -25,6 +25,7 @@ class RPQRParser:
         :param config: provided rpqr configuration
         :type config: RPQRConfiguration
         """
+        self.logger = logging.getLogger("RPQRParser")
         self.config = config
         self.stack = []
 
@@ -199,7 +200,7 @@ class RPQRParser:
                             continue
                         argToken = tokens.pop(0)
                         if argToken.type != member:
-                            logging.error(
+                            self.logger.error(
                                 "Bad argument supplied to %s command" % (curInput.content))
                             return None
                         if argToken.type in [self.config.tokenTypes["number"], self.config.tokenTypes["string"]]:
@@ -218,7 +219,7 @@ class RPQRParser:
 
                 requiredAction = precedencTable[self.stack[lastTerminalIndex].type][curInput.type]
                 if requiredAction == RPQRPrecedentCommands.ERROR:
-                    logging.error("Syntax error")
+                    self.logger.error("Syntax error")
                     return None
                 elif requiredAction == RPQRPrecedentCommands.SUCCESS:
                     if rootStatement == None:
@@ -275,7 +276,7 @@ class RPQRParser:
                 matchedRuleIndex = ruleIndex
                 break
         if matchedRuleIndex is None:
-            logging.error("Syntax error")
+            self.logger.error("Syntax error")
             return False
         self.callbacks[matchedRuleIndex]()
         return True
@@ -302,7 +303,7 @@ class RPQRParser:
             elif testedToken.type == self.config.tokenTypes["rightBracelet"]:
                 openBracelets -= 1
                 if openBracelets < 0:
-                    logging.error("Not closed statement supplied as argument")
+                    self.logger.error("Not closed statement supplied as argument")
                     return None
             subStatement.append(tokens.pop(0))
         subStatement.append(RPQRToken(self.config.tokenTypes["end"]))

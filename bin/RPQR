@@ -1,0 +1,43 @@
+#!/usr/bin/python3
+
+import argparse
+import configparser
+import json
+import networkx
+import matplotlib.pyplot as plt
+
+from rpqr.library.RPQRConfiguration import RPQRConfiguration
+from rpqr.loader.RPQRLoader import RPQRLoader
+from rpqr.query.RPQRQuery import RPQRQuery
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="RPQR project CLI")
+    parser.add_argument("cfgPath", type=str, help="Path to configuration file")
+    parser.add_argument("query", type=str, help="Query in RPQR language")
+    args = parser.parse_args()
+    cfgParser = configparser.ConfigParser()
+    cfgParser.read(args.cfgPath)
+
+    pluginDirectories = json.loads(cfgParser["RPQR"]["pluginDirectories"])
+    repositories = json.loads(cfgParser["RPQR"]["repositories"])
+    namexrepository = []
+    pair = []
+    for k in repositories:
+        pair.append(k)
+        if len(pair) == 2:
+            namexrepository.append((pair[0], pair[1]))
+            pair = []
+
+    rpqrcfg = RPQRConfiguration(pluginDirectories, namexrepository)
+    loader = RPQRLoader(rpqrcfg)
+    graph = loader.createDatabase()
+    result = RPQRQuery.performQuery(args.query, graph, rpqrcfg)
+
+    if result is not None:
+        result : networkx.MultiDiGraph
+        labelDict = {}
+        for nodeId in result:
+            labelDict[nodeId] = graph.nodes[nodeId]["name"]
+        networkx.draw_spring(result, with_labels = True, labels=labelDict)
+        plt.show()
+    
