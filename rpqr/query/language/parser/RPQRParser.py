@@ -25,7 +25,7 @@ class RPQRParser:
         :param config: provided rpqr configuration
         :type config: RPQRConfiguration
         """
-        self.logger = logging.getLogger("RPQRParser")
+        self.logger = config.rootLogger.getChild("RPQRParser")
         self.config = config
         self.stack = []
 

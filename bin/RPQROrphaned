@@ -17,7 +17,7 @@ from rpqr.query.language.scanner import RPQRScanner
 import rpqr.loader.plugins.implementations
 
 """
-This is a proof of concept script which showes current state of implementation
+This is a proof of concept script which shows current state of implementation
 and performs real life use case.
 mhroncok sends mail to fedora-devel mailing list once in a while to
 point out newly orphaned packages to maintainer which are affected by

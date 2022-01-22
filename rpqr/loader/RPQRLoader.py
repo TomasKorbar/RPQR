@@ -4,9 +4,14 @@ Author: Tomáš Korbař (tomas.korb@seznam.cz)
 Copyright 2021 - 2021 Tomáš Korbař
 '''
 
+import os
 import dnf
+import json
 import hawkey
+import logging
 import networkx
+from networkx.readwrite import json_graph
+
 
 from rpqr.library import RPQRConfiguration
 from rpqr.loader.plugins.library.RPQRDataPlugin import RPQRDataPlugin
@@ -25,19 +30,40 @@ class RPQRLoader:
         """
         self.repositories = config.repositories
         self.plugins = config.plugins
+        self.logger = config.rootLogger.getChild("RPQRLoader")
 
-    def createDatabase(self) -> networkx.MultiDiGraph:
+    def createDatabase(self, cache: str = None) -> networkx.MultiDiGraph:
         """ Get graph of packages with data and relations described by plugins
 
+        :param cache: path to cache file, defaults to None
+        :type cache: str, optional
         :return: Graph of packages
         :rtype: networkx.MultiDiGraph
         """
         graph = networkx.MultiDiGraph()
-
         dataPlugins = [plugin for plugin in self.plugins if isinstance(
             plugin, RPQRDataPlugin)]
         relationPlugins = [plugin for plugin in self.plugins if isinstance(
             plugin, RPQRRelationPlugin)]
+
+        pluginRecords = []
+        for plugin in dataPlugins + relationPlugins:
+            pluginRecords.append((plugin, plugin.__class__.__name__))
+
+        if os.path.exists(cache) and os.path.isfile(cache):
+            with open(cache, "r") as cFile:
+                graph = json_graph.node_link_graph(json.loads(cFile.read()))
+            self.logger.info("Using found cache")
+            for (plugin, name) in pluginRecords:
+                if name in graph.graph["plugins"]:
+                    if plugin in dataPlugins:
+                        dataPlugins.remove(plugin)
+                    elif plugin in relationPlugins:
+                        relationPlugins.remove(plugin)
+                    self.logger.info(
+                        "Will not build information for plugin %s as cache already contains it", name)
+        else:
+            self.logger.info("Cache was not found so building it")
 
         av_query = self._getAvailableQuery()
         q_avail = av_query.run()
@@ -52,6 +78,13 @@ class RPQRLoader:
             for pluginInstance in relationPlugins:
                 pluginInstance: RPQRRelationPlugin
                 pluginInstance.fillData(id, pkg, graph, av_query)
+
+        graph.graph["plugins"] = [name for (_, name) in pluginRecords]
+
+        if cache is not None:
+            with open(cache, "w") as cFile:
+                cFile.write(json.dumps(json_graph.node_link_data(graph)))
+
         return graph
 
     def _getAvailableQuery(self) -> hawkey.Query:

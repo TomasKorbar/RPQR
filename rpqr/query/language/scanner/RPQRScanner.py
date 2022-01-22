@@ -39,7 +39,7 @@ class RPQRScanner:
         :param config: provided rpqr configuration
         :type config: RPQRConfiguration
         """
-        self.logger = logging.getLogger("RPQRScanner")
+        self.logger = config.rootLogger.getChild("RPQRScanner")
         self.tokenTypes = config.tokenTypes
         self.commandTypes = config.commandTypes
         self.allowedSpecialCharacters = config.allowedSpecialCharacters

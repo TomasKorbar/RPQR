@@ -4,6 +4,7 @@ Author: Tomáš Korbař (tomas.korb@seznam.cz)
 Copyright 2021 - 2021 Tomáš Korbař
 '''
 
+import logging
 import os
 import sys
 import importlib
@@ -15,13 +16,12 @@ from rpqr.query.commands import RPQRFilteringCommand
 
 class RPQRConfiguration:
     """
-    [summary]
     Configuration class meant for loading plugins and setting
     up query language configuration (types of terminal and non-terminal symbols).
     """
 
     def __init__(self, pluginDirectories: List[str], repositories: List[Tuple[str, str]]) -> None:
-        """[summary]
+        """Initialize instance of RPQRConfiguration
 
         :param pluginDirectories: Directories containing plugin modules.
         :type pluginDirectories: List[str]
@@ -29,6 +29,8 @@ class RPQRConfiguration:
         :type repositories: List[Tuple[str, str]]
         """
         self.pluginDirectories = pluginDirectories
+        logging.basicConfig(level=logging.INFO)
+        self.rootLogger = logging.getLogger("RPQR")
         self.plugins = list()
         self._initializePlugins()
         self.repositories = repositories
