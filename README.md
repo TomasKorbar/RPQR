@@ -29,9 +29,10 @@ First you need to provide configuration in the following format:
 [RPQR]
 pluginDirectories=["/bar/foo/pluginDirectory"]
 repositories=["repo alias", "http://example.org/repo"]
+cache=cache.json
 ```
 
 Then you can execute your queries through CLI interface and get visualized results.
 ```
-$ RPQR example.conf "NAMELIKE('libyang')"
+$ RPQR example.conf "NAMELIKE('libyang')" --visualize --filterResult "name" ""
 ```

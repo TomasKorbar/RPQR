@@ -1,16 +1,17 @@
 '''
 Project: RPQR
 Author: Tomáš Korbař (tomas.korb@seznam.cz)
-Copyright 2021 - 2021 Tomáš Korbař
+Copyright 2021 - 2022 Tomáš Korbař
 '''
 
-from rpqr.library.RPQRConfiguration import RPQRConfiguration
-from rpqr.loader.plugins.library.RPQRBasePlugin import RPQRBasePlugin
+import networkx
+
 from rpqr.query.commands.RPQRFilteringCommand import RPQRFilteringCommand
+from rpqr.loader.plugins.library.RPQRBasePlugin import RPQRBasePlugin
+from rpqr.library.RPQRConfiguration import RPQRConfiguration
+from rpqr.query.language.interpreter import RPQRResultTree
 from rpqr.query.language.parser import RPQRStackSymbol
 from rpqr.query.language.scanner import RPQRToken
-from rpqr.query.language.interpreter import RPQRResultTree
-import networkx
 
 
 class RPQRInterpreter:

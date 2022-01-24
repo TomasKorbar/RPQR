@@ -1,7 +1,7 @@
 '''
 Project: RPQR
 Author: Tomáš Korbař (tomas.korb@seznam.cz)
-Copyright 2021 - 2021 Tomáš Korbař
+Copyright 2021 - 2022 Tomáš Korbař
 '''
 
 from typing import List
@@ -58,32 +58,11 @@ class DependsOnUserFilter(RPQRFilteringCommand):
         :rtype: List[int]
         """
         targetUser = args[0]
-        maxDepth = int(args[1])
+        depth = int(args[1])
         nodes = [a for a in list(graph.nodes)
                  if targetUser in graph.nodes[a]["maintainer"]]
-        for node in nodes:
-            graph.nodes[node]["depth"] = 1
-        nodeIndex = 0
-        # our well know BFS
-        # TODO: investigate whether BFS and DFS could not be implemented
-        # generally in plugin base class
-        while len(nodes) > nodeIndex:
-            curNode = nodes[nodeIndex]
-            if maxDepth != 0 and graph.nodes[curNode]["depth"] >= maxDepth:
-                nodeIndex += 1
-                continue
-            for node1, node2, data in graph.in_edges([curNode], data=True):
-                if data["type"] != "depends":
-                    continue
-                if node1 not in nodes:
-                    graph.nodes[node1]["depth"] = graph.nodes[curNode]["depth"]+1
-                    nodes.append(node1)
-            nodeIndex += 1
 
-        for node in nodes:
-            graph.nodes[node].pop("depth")
-        
-        return nodes
+        return RPQRFilteringCommand._BFS(graph, nodes, depth, "depends")
 
 
 class RPQRMaintainerPlugin(RPQRDataPlugin):
@@ -96,7 +75,7 @@ class RPQRMaintainerPlugin(RPQRDataPlugin):
 
     packageToMaintainer = None
 
-    def prepareData(self, pkg : hawkey.Package) -> List[str]:
+    def prepareData(self, pkg: hawkey.Package) -> List[str]:
         """Get maintainers of package
 
         :param pkg: hawkey package information

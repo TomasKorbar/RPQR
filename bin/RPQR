@@ -1,22 +1,40 @@
 #!/usr/bin/python3
 
-import argparse
-import configparser
-import json
-import networkx
+'''
+Project: RPQR
+Author: Tomáš Korbař (tomas.korb@seznam.cz)
+Copyright 2021 - 2022 Tomáš Korbař
+'''
+
+from networkx.readwrite import json_graph
 import matplotlib.pyplot as plt
-import logging
+import configparser
+import argparse
+import networkx
+import json
 import sys
 
 from rpqr.library.RPQRConfiguration import RPQRConfiguration
 from rpqr.loader.RPQRLoader import RPQRLoader
 from rpqr.query.RPQRQuery import RPQRQuery
 
+""" This is script which allows user to work with rpqr from commandline.
+    It allows user to perform queries over rpm repository, cache its structure
+    and choose whether the output should be visualized or printed on stdout.
+"""
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RPQR project CLI")
     parser.add_argument("cfgPath", type=str, help="Path to configuration file")
-    parser.add_argument("query", type=str, help="Query in RPQR language", default="")
+    parser.add_argument("query", type=str,
+                        help="Query in RPQR language", default="")
+    parser.add_argument("--filterResult", type=str,
+                        help="Specify list of attributes which interest you in the result " +
+                             "and another list of relations",
+                        default=[], nargs=2)
+    parser.add_argument("--visualize", action="store_true",
+                        default=False, help="Visualize result")
+
     args = parser.parse_args()
     cfgParser = configparser.ConfigParser()
     cfgParser.read(args.cfgPath)
@@ -32,11 +50,11 @@ if __name__ == "__main__":
             namexrepository.append((pair[0], pair[1]))
             pair = []
 
-    logger = logging.getLogger("RPQR")
     rpqrcfg = RPQRConfiguration(pluginDirectories, namexrepository)
     loader = RPQRLoader(rpqrcfg)
     graph = loader.createDatabase(cacheFile)
 
+    # we will not be performing empty query
     if len(args.query) == 0:
         sys.exit(0)
 
@@ -45,10 +63,43 @@ if __name__ == "__main__":
     if result is None:
         sys.exit(1)
 
-    result : networkx.MultiDiGraph
+    # we will filter result attributes according to supplied parameters
+    if len(args.filterResult) != 0:
+        allAttrs = args.filterResult[0].split(";") if len(
+            args.filterResult[0].split(";")[0]) != 0 else []
+        allAttrs += args.filterResult[1].split(";") if len(
+            args.filterResult[1].split(";")[0]) != 0 else []
+        checkTuple = rpqrcfg.isAttributeSupported(allAttrs)
+        if not checkTuple[0]:
+            rpqrcfg.rootLogger.error(
+                "attribute %s unsupported (maybe missing plugin?)", checkTuple[1])
+            sys.exit(2)
+        if len(args.filterResult[0].split(";")[0]) != 0:
+            for node in result.nodes:
+                for key in list(result.nodes[node].keys()):
+                    if not key in args.filterResult[0].split(";"):
+                        del result.nodes[node][key]
+        if len(args.filterResult[1].split(";")[0]) != 0:
+            for node in result.nodes:
+                for u, v, data in graph.out_edges([node], data=True):
+                    if not data["key"] in args.filterResult[1].split(";"):
+                        graph.remove_edge(u, v, key=data["key"])
+
+    # if result should not be visualized then just print it in JSON format to stdout
+    if not args.visualize:
+        print(json.dumps(json_graph.node_link_data(result), indent=4, sort_keys=True))
+        sys.exit(0)
+
+    # labeling requires some more processing
+    result: networkx.MultiDiGraph
     labelDict = {}
-    for nodeId in result:
-        labelDict[nodeId] = graph.nodes[nodeId]["name"]
-    networkx.draw_spring(result, with_labels = True, labels=labelDict)
+    for nodeId in result.nodes:
+        label = ""
+        for (attr, value) in graph.nodes[nodeId].items():
+            label += "%s=%s\n" % (attr, value)
+        labelDict[nodeId] = label
+    pos = networkx.spring_layout(result)
+    networkx.draw_networkx(result, pos=pos, with_labels=True, labels=labelDict)
+    edgeLabels = dict([((n1, n2), key) for n1, n2, key in result.edges])
+    networkx.draw_networkx_edge_labels(result, pos=pos, edge_labels=edgeLabels)
     plt.show()
-    

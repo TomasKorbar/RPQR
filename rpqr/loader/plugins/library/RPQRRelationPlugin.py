@@ -1,7 +1,7 @@
 '''
 Project: RPQR
 Author: Tomáš Korbař (tomas.korb@seznam.cz)
-Copyright 2021 - 2021 Tomáš Korbař
+Copyright 2021 - 2022 Tomáš Korbař
 '''
 
 from typing import List
@@ -29,7 +29,7 @@ class RPQRRelationPlugin(RPQRBasePlugin):
         """
         targetList = self.prepareData(pkg, graph, query)
         for target in targetList:
-            graph.add_edge(id, target, type=self.desiredName)
+            graph.add_edge(id, target, key=self.desiredName)
 
     def prepareData(self, pkg: hawkey.Package, graph: networkx.MultiDiGraph, query: hawkey.Query) -> List[int]:
         """ Get list of nodes to which we want to form a relation

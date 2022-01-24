@@ -1,18 +1,17 @@
 '''
 Project: RPQR
 Author: Tomáš Korbař (tomas.korb@seznam.cz)
-Copyright 2021 - 2021 Tomáš Korbař
+Copyright 2021 - 2022 Tomáš Korbař
 '''
 
-import logging
 from typing import List
 
-from rpqr.query.language.parser import RPQRStackSymbol
-from rpqr.query.language.scanner.RPQRToken import RPQRToken
+from rpqr.query.commands.RPQRFilteringCommand import RPQRFilteringCommand
+from rpqr.loader.plugins.library.RPQRBasePlugin import RPQRBasePlugin
 from rpqr.query.language.parser import RPQRPrecedentCommands
 from rpqr.library.RPQRConfiguration import RPQRConfiguration
-from rpqr.loader.plugins.library.RPQRBasePlugin import RPQRBasePlugin
-from rpqr.query.commands.RPQRFilteringCommand import RPQRFilteringCommand
+from rpqr.query.language.scanner.RPQRToken import RPQRToken
+from rpqr.query.language.parser import RPQRStackSymbol
 
 
 class RPQRParser:
@@ -303,7 +302,8 @@ class RPQRParser:
             elif testedToken.type == self.config.tokenTypes["rightBracelet"]:
                 openBracelets -= 1
                 if openBracelets < 0:
-                    self.logger.error("Not closed statement supplied as argument")
+                    self.logger.error(
+                        "Not closed statement supplied as argument")
                     return None
             subStatement.append(tokens.pop(0))
         subStatement.append(RPQRToken(self.config.tokenTypes["end"]))

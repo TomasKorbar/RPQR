@@ -1,7 +1,7 @@
 '''
 Project: RPQR
 Author: Tomáš Korbař (tomas.korb@seznam.cz)
-Copyright 2021 - 2021 Tomáš Korbař
+Copyright 2021 - 2022 Tomáš Korbař
 '''
 
 import logging
@@ -53,7 +53,7 @@ class RPQRConfiguration:
                 self.commandIndex += 1
 
     def _initializePlugins(self):
-        """Load plugins from supplied directories
+        """ Load plugins from supplied directories
         """
         for dir in self.pluginDirectories:
             sys.path.append(dir)
@@ -68,3 +68,22 @@ class RPQRConfiguration:
             pluginClass = getattr(module, moduleName)
             pluginInstance = pluginClass()
             self.plugins.append(pluginInstance)
+
+    def isAttributeSupported(self, attributes: List[str]) -> Tuple[bool, str]:
+        """ Find out whether attributes are supported by this configuration
+
+        :param attributes: attributes which should be checked
+        :type attributes: List[str]
+        :return: Tuple with boolean indicating whether attributes are supported and
+                 string with first unsupported attribute when needed.
+        :rtype: Tuple[bool, str]
+        """
+        for attr in attributes:
+            currCheck = False
+            for plugin in self.plugins:
+                if plugin.desiredName == attr:
+                    currCheck = True
+                    break
+            if not currCheck:
+                return (False, attr)
+        return (True, "")

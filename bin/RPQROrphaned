@@ -3,18 +3,16 @@
 '''
 Project: RPQR
 Author: Tomáš Korbař (tomas.korb@seznam.cz)
-Copyright 2021 - 2021 Tomáš Korbař
+Copyright 2021 - 2022 Tomáš Korbař
 '''
 
 import os
 import sys
 
 from rpqr.library.RPQRConfiguration import RPQRConfiguration
-from rpqr.loader import RPQRLoader
-from rpqr.query.language.interpreter import RPQRInterpreter
-from rpqr.query.language.parser import RPQRParser
-from rpqr.query.language.scanner import RPQRScanner
+from rpqr.query.RPQRQuery import RPQRQuery
 import rpqr.loader.plugins.implementations
+from rpqr.loader import RPQRLoader
 
 """
 This is a proof of concept script which shows current state of implementation
@@ -33,19 +31,11 @@ if __name__ == "__main__":
     loader = RPQRLoader(config)
     # parse information about packages
     graph = loader.createDatabase()
-    scnr = RPQRScanner(config)
-    parser = RPQRParser(config)
-    interpreter = RPQRInterpreter(config)
-    # get abstract syntax tree for first command
-    AST = parser.parseTokens(scnr.getTokens("MAINTAINER('orphan')"))
-    # interpret first command
-    # we will get packages which are orphaned in fedora 33
-    result = interpreter.performCommands(graph, AST)
+    result = RPQRQuery.performQuery("MAINTAINER('orphan')", graph, config)
     for node in list(result.nodes):
         # now we will recursively gather packages which depend on every orphaned package
-        AST = parser.parseTokens(scnr.getTokens(
-            "WHATDEPENDSON('%s', 20)" % graph.nodes[node]["name"]))
-        dependentPackages = interpreter.performCommands(graph, AST)
+        dependentPackages = RPQRQuery.performQuery(
+            "WHATDEPENDSON('%s', 20)" % graph.nodes[node]["name"], graph, config)
         # get maintainers affected by this change
         maintainerList = []
         for pkgId in list(dependentPackages.nodes):
@@ -59,14 +49,3 @@ if __name__ == "__main__":
             print("%s " % maint, end="")
         print()
 
-    # just some code stored for later implementation of visualization
-    """
-
-    labelDict = {}
-    for nodeId in result:
-        labelDict[nodeId] = graph.nodes[nodeId]["name"]
-
-    networkx.draw_spring(result, with_labels = True, labels=labelDict, )
-
-    plt.show()
-    """

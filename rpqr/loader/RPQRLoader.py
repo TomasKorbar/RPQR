@@ -1,14 +1,13 @@
 '''
 Project: RPQR
 Author: Tomáš Korbař (tomas.korb@seznam.cz)
-Copyright 2021 - 2021 Tomáš Korbař
+Copyright 2021 - 2022 Tomáš Korbař
 '''
 
 import os
 import dnf
 import json
 import hawkey
-import logging
 import networkx
 from networkx.readwrite import json_graph
 
@@ -50,7 +49,7 @@ class RPQRLoader:
         for plugin in dataPlugins + relationPlugins:
             pluginRecords.append((plugin, plugin.__class__.__name__))
 
-        if os.path.exists(cache) and os.path.isfile(cache):
+        if cache is not None and os.path.exists(cache) and os.path.isfile(cache):
             with open(cache, "r") as cFile:
                 graph = json_graph.node_link_graph(json.loads(cFile.read()))
             self.logger.info("Using found cache")
@@ -62,7 +61,7 @@ class RPQRLoader:
                         relationPlugins.remove(plugin)
                     self.logger.info(
                         "Will not build information for plugin %s as cache already contains it", name)
-        else:
+        elif cache is not None:
             self.logger.info("Cache was not found so building it")
 
         av_query = self._getAvailableQuery()

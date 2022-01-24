@@ -1,7 +1,7 @@
 '''
 Project: RPQR
 Author: Tomáš Korbař (tomas.korb@seznam.cz)
-Copyright 2021 - 2021 Tomáš Korbař
+Copyright 2021 - 2022 Tomáš Korbař
 '''
 
 
@@ -42,29 +42,8 @@ class OnWhatDependsFilter(RPQRFilteringCommand):
         if targetNode == None:
             return []
         nodes.append(targetNode)
-        nodesIndex = 0
-        graph.nodes[targetNode]["depth"] = 0
-        # this is a BFS of dependencies
-        while len(nodes) > nodesIndex:
-            curNode = nodes[nodesIndex]
-            # == would be sufficient but use >= just to be sure
-            if graph.nodes[curNode]["depth"] >= depth:
-                nodesIndex += 1
-                continue
-            for node1, node2, data in graph.out_edges([curNode], data=True):
-                # if this is not a depends relation then skip it
-                if data["type"] != "depends":
-                    continue
-                if node2 not in nodes:
-                    nodes.append(node2)
-                    graph.nodes[node2]["depth"] = graph.nodes[curNode]["depth"] + 1
-            nodesIndex += 1
 
-        # we should tidy after ourselves
-        for node in nodes:
-            graph.nodes[node].pop("depth")
-
-        return nodes
+        return RPQRFilteringCommand._BFS(graph, nodes, depth, "depends", inEdges=False)
 
 
 class WhatDepensOnFilter(RPQRFilteringCommand):
@@ -97,25 +76,8 @@ class WhatDepensOnFilter(RPQRFilteringCommand):
         if targetNode == None:
             return []
         nodes.append(targetNode)
-        nodesIndex = 0
-        graph.nodes[targetNode]["depth"] = 0
-        while len(nodes) > nodesIndex:
-            curNode = nodes[nodesIndex]
-            if graph.nodes[curNode]["depth"] >= depth:
-                nodesIndex += 1
-                continue
-            for node1, node2, data in graph.in_edges([curNode], data=True):
-                if data["type"] != "depends":
-                    continue
-                if node1 not in nodes:
-                    nodes.append(node1)
-                    graph.nodes[node1]["depth"] = graph.nodes[curNode]["depth"] + 1
-            nodesIndex += 1
 
-        for node in nodes:
-            graph.nodes[node].pop("depth")
-
-        return nodes
+        return RPQRFilteringCommand._BFS(graph, nodes, depth, "depends")
 
 
 class RPQRDependencyPlugin(RPQRRelationPlugin):
