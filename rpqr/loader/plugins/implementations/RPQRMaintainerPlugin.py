@@ -4,6 +4,8 @@ Author: Tomáš Korbař (tomas.korb@seznam.cz)
 Copyright 2021 - 2022 Tomáš Korbař
 '''
 
+from email.policy import default
+from logging import Logger
 from typing import List
 import requests
 import networkx
@@ -75,8 +77,27 @@ class RPQRMaintainerPlugin(RPQRDataPlugin):
 
     packageToMaintainer = None
 
+    def __init__(self, rootLogger: Logger = None, config: dict = None):
+        self.listUrl = None
+        if config == None and rootLogger != None:
+            lgr = rootLogger.getChild("RPQRDataPlugin")
+            lgr.warning("url for retrieval of maintainers was not supplied")
+            return
+
+        self.logger = rootLogger.getChild("RPQRDataPlugin") if rootLogger != None else None
+
+        self.listUrl = config.get("url")
+
     def _downloadJson(self):
-        return requests.get('https://src.fedoraproject.org/extras/pagure_owner_alias.json').json()["rpms"]
+        if self.listUrl == None:
+            return {}
+        receivedResponse = requests.get(self.listUrl)
+
+        if receivedResponse.status_code != 200:
+            self.logger.error(
+                "RPQR was unable to retrieve maintainer list from supplied url %s" % self.listUrl)
+
+        return receivedResponse.json().get("RPMS", default={})
 
     def prepareData(self, pkg: hawkey.Package) -> List[str]:
         """Get maintainers of package

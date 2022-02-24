@@ -13,7 +13,7 @@ from networkx import MultiDiGraph
 
 class TestRPQRMaintainerPlugin(unittest.TestCase):
     def testPrepareData(self):
-        plug = RPQRMaintainerPlugin()
+        plug = RPQRMaintainerPlugin(config={"url": "hello"})
         plug._downloadJson = lambda: {"one": ["maint1", "maint2"]}
         pkg = HawkeyPackageMock()
         self.assertEqual(plug.prepareData(pkg), ["maint1", "maint2"])

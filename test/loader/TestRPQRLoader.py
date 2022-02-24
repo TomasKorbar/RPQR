@@ -14,6 +14,6 @@ class TestRPQRLoader(unittest.TestCase):
     """
 
     def testCreateDatabase(self):
-        config = RPQRConfiguration(["./rpqr/loader/plugins/implementations"], [("test-repo", "https://tkorbar.fedorapeople.org/rpqrTestingRepo/")])        
+        config = RPQRConfiguration(["./test/query/language/parser/mock_plugins"], [("test-repo", "https://tkorbar.fedorapeople.org/rpqrTestingRepo/")])        
         loader = RPQRLoader(config)
         self.assertEqual(len(loader.createDatabase().nodes), 1)

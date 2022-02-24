@@ -20,7 +20,7 @@ class RPQRConfiguration:
     up query language configuration (types of terminal and non-terminal symbols).
     """
 
-    def __init__(self, pluginDirectories: List[str], repositories: List[Tuple[str, str]]) -> None:
+    def __init__(self, pluginDirectories: List[str], repositories: List[Tuple[str, str]], userConfiguration: dict = {}) -> None:
         """Initialize instance of RPQRConfiguration
 
         :param pluginDirectories: Directories containing plugin modules.
@@ -29,6 +29,7 @@ class RPQRConfiguration:
         :type repositories: List[Tuple[str, str]]
         """
         self.pluginDirectories = pluginDirectories
+        self.userConfiguration = userConfiguration
         logging.basicConfig(level=logging.INFO)
         self.rootLogger = logging.getLogger("RPQR")
         self.plugins = list()
@@ -64,9 +65,13 @@ class RPQRConfiguration:
             # if file name starts with _ then it is most likely not a plugin
             if moduleName.startswith("_"):
                 continue
+            if (self.userConfiguration.get(moduleName) != None
+                    and self.userConfiguration["disabled"] == "1"):
+                continue
             module = importlib.import_module(moduleName)
             pluginClass = getattr(module, moduleName)
-            pluginInstance = pluginClass()
+            pluginInstance = pluginClass(rootLogger=self.rootLogger,
+                                         config=self.userConfiguration.get(moduleName))
             self.plugins.append(pluginInstance)
 
     def isAttributeSupported(self, attributes: List[str]) -> Tuple[bool, str]:

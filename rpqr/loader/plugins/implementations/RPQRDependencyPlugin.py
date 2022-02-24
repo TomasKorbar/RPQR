@@ -8,6 +8,7 @@ Copyright 2021 - 2022 Tomáš Korbař
 import hawkey
 from typing import List
 from networkx import MultiDiGraph
+from logging import Logger
 
 from rpqr.loader.plugins.library import RPQRRelationPlugin
 from rpqr.query.commands import RPQRFilteringCommand
@@ -87,7 +88,7 @@ class RPQRDependencyPlugin(RPQRRelationPlugin):
     desiredName = "depends"
     implementedCommands = [OnWhatDependsFilter, WhatDepensOnFilter]
 
-    def __init__(self) -> None:
+    def __init__(self, rootLogger: Logger = None, config: dict = None) -> None:
         self.optionalDataStructure = None
 
     def prepareData(self, pkg: hawkey.Package, graph: MultiDiGraph, query: hawkey.Query) -> List[int]:
