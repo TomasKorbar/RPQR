@@ -53,7 +53,7 @@ class RPQRFilteringCommand:
         for node in rootNodes:
             graph.nodes[node]["depth"] = 0
 
-        while len(rootNodes) > nodeIndex:
+        while len(nodes) > nodeIndex:
             curNode = nodes[nodeIndex]
             if maxDepth != -1 and graph.nodes[curNode]["depth"] > maxDepth:
                 nodeIndex += 1

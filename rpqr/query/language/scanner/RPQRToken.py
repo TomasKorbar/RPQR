@@ -27,3 +27,8 @@ class RPQRToken:
         :type what: str
         """
         self.content += what
+
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, RPQRToken):
+            return False
+        return True if self.type == __o.type and self.content == __o.content else False

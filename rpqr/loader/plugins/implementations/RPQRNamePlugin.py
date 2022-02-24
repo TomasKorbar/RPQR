@@ -67,7 +67,7 @@ class NameLikeFilter(RPQRFilteringCommand):
         return nodes
 
 
-class FilterSet(RPQRFilteringCommand):
+class SetFilter(RPQRFilteringCommand):
     """ Command allowing us to filter subset of packages by existence of
     substring in their name
 
@@ -104,7 +104,7 @@ class RPQRNamePlugin(RPQRDataPlugin):
     """
     desiredName = "name"
 
-    implementedCommands = [NameFilter, NameLikeFilter, FilterSet]
+    implementedCommands = [NameFilter, NameLikeFilter, SetFilter]
 
     def prepareData(self, pkg: hawkey.Package) -> str:
         return str(pkg)

@@ -75,6 +75,9 @@ class RPQRMaintainerPlugin(RPQRDataPlugin):
 
     packageToMaintainer = None
 
+    def _downloadJson(self):
+        return requests.get('https://src.fedoraproject.org/extras/pagure_owner_alias.json').json()["rpms"]
+
     def prepareData(self, pkg: hawkey.Package) -> List[str]:
         """Get maintainers of package
 
@@ -86,8 +89,7 @@ class RPQRMaintainerPlugin(RPQRDataPlugin):
         # download package maintainer list and build dictionary from it
         if RPQRMaintainerPlugin.packageToMaintainer is None:
             RPQRMaintainerPlugin.packageToMaintainer = {}
-            data = requests.get(
-                'https://src.fedoraproject.org/extras/pagure_owner_alias.json').json()["rpms"]
+            data = self._downloadJson()
             data: dict
             for name, value in data.items():
                 RPQRMaintainerPlugin.packageToMaintainer[name] = value

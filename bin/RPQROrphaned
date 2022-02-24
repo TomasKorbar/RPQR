@@ -45,7 +45,7 @@ if __name__ == "__main__":
         # orphan is just a placeholder so remove it
         maintainerList.remove('orphan')
         print("%s => " % graph.nodes[node]["name"], end="")
-        for maint in maintainerList:
-            print("%s " % maint, end="")
+        for maintainter in maintainerList:
+            print("%s " % maintainer, end="")
         print()
 

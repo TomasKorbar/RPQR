@@ -30,3 +30,13 @@ class RPQRStackSymbol:
         :type children: object
         """
         self.children = children
+
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, RPQRStackSymbol):
+            return False
+        elif (__o.operator == self.operator
+                and __o.type == self.type
+                and __o.children == self.children):
+                return True
+        else:
+            return False
