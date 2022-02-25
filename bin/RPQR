@@ -50,7 +50,7 @@ if __name__ == "__main__":
             namexrepository.append((pair[0], pair[1]))
             pair = []
 
-    rpqrcfg = RPQRConfiguration(pluginDirectories, namexrepository)
+    rpqrcfg = RPQRConfiguration(pluginDirectories, namexrepository, cfgParser)
     loader = RPQRLoader(rpqrcfg)
     graph = loader.createDatabase(cacheFile)
 

@@ -4,7 +4,6 @@ Author: Tomáš Korbař (tomas.korb@seznam.cz)
 Copyright 2021 - 2022 Tomáš Korbař
 '''
 
-from email.policy import default
 from logging import Logger
 from typing import List
 import requests

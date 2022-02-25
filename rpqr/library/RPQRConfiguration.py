@@ -65,13 +65,17 @@ class RPQRConfiguration:
             # if file name starts with _ then it is most likely not a plugin
             if moduleName.startswith("_"):
                 continue
-            if (self.userConfiguration.get(moduleName) != None
-                    and self.userConfiguration["disabled"] == "1"):
+            cfg = None
+            if moduleName in self.userConfiguration.sections():
+                cfg = self.userConfiguration[moduleName]
+
+            if (cfg != None and cfg.get("disabled") == "1"):
                 continue
             module = importlib.import_module(moduleName)
             pluginClass = getattr(module, moduleName)
+
             pluginInstance = pluginClass(rootLogger=self.rootLogger,
-                                         config=self.userConfiguration.get(moduleName))
+                                         config=cfg)
             self.plugins.append(pluginInstance)
 
     def isAttributeSupported(self, attributes: List[str]) -> Tuple[bool, str]:
