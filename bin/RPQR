@@ -30,7 +30,7 @@ if __name__ == "__main__":
                         help="Query in RPQR language", default="")
     parser.add_argument("--filterResult", type=str,
                         help="Specify list of attributes which interest you in the result " +
-                             "and another list of relations",
+                            "and another list of relations",
                         default=[], nargs=2)
     parser.add_argument("--visualize", action="store_true",
                         default=False, help="Visualize result")

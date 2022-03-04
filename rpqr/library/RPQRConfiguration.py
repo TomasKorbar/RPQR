@@ -29,9 +29,10 @@ class RPQRConfiguration:
         :type repositories: List[Tuple[str, str]]
         """
         self.pluginDirectories = pluginDirectories
-        self.userConfiguration = userConfiguration
+        self.userConfiguration = dict(userConfiguration)
         logging.basicConfig(level=logging.INFO)
         self.rootLogger = logging.getLogger("RPQR")
+        self._logger = self.rootLogger.getChild("RPQRConfiguration")
         self.plugins = list()
         self._initializePlugins()
         self.repositories = repositories
@@ -66,10 +67,11 @@ class RPQRConfiguration:
             if moduleName.startswith("_"):
                 continue
             cfg = None
-            if moduleName in self.userConfiguration.sections():
+            if moduleName in self.userConfiguration.keys():
                 cfg = self.userConfiguration[moduleName]
 
             if (cfg != None and cfg.get("disabled") == "1"):
+                self._logger.info("%s plugin was disabled in configuration" % moduleName)
                 continue
             module = importlib.import_module(moduleName)
             pluginClass = getattr(module, moduleName)
