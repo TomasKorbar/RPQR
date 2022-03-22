@@ -42,7 +42,7 @@ class RPQRConfiguration:
         # terminals starting commands
         self.commandTypes = {}
         # special characters allowed in string literals
-        self.allowedSpecialCharacters = ['&', '|', '-', '.', ':', '_', '~']
+        self.allowedSpecialCharacters = ['&', '|', '-', '.', ':', '_', '~', '+', '^']
         # since we need to use additional non terminals in parser,
         # we will make the index public to avoid any collision
         # with existing symbols
@@ -71,7 +71,8 @@ class RPQRConfiguration:
                 cfg = self.userConfiguration[moduleName]
 
             if (cfg != None and cfg.get("disabled") == "1"):
-                self._logger.info("%s plugin was disabled in configuration" % moduleName)
+                self._logger.info(
+                    "%s plugin was disabled in configuration" % moduleName)
                 continue
             module = importlib.import_module(moduleName)
             pluginClass = getattr(module, moduleName)

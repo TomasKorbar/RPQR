@@ -1,0 +1,366 @@
+
+%==============================================================================
+\documentclass[english]{fitthesis} % bez zadání - pro začátek práce, aby nebyl problém s překladem
+
+%---rm---------------
+\renewcommand{\rmdefault}{lmr}%zavede Latin Modern Roman jako rm / set Latin Modern Roman as rm
+%---sf---------------
+\renewcommand{\sfdefault}{qhv}%zavede TeX Gyre Heros jako sf
+%---tt------------
+\renewcommand{\ttdefault}{lmtt}% zavede Latin Modern tt jako tt
+
+% vypne funkci šablony, která automaticky nahrazuje uvozovky,
+% aby nebyly prováděny nevhodné náhrady v popisech API apod.
+% disables function of the template which replaces quotation marks
+% to avoid unnecessary replacements in the API descriptions etc.
+\csdoublequotesoff
+
+
+
+\usepackage{url}
+
+
+% =======================================================================
+% balíček "hyperref" vytváří klikací odkazy v pdf, pokud tedy použijeme pdflatex
+% problém je, že balíček hyperref musí být uveden jako poslední, takže nemůže
+% být v šabloně
+% "hyperref" package create clickable links in pdf if you are using pdflatex.
+% Problem is that this package have to be introduced as the last one so it 
+% can not be placed in the template file.
+\ifWis
+\ifx\pdfoutput\undefined % nejedeme pod pdflatexem / we are not using pdflatex
+\else
+  \usepackage{color}
+  \usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex]{hyperref}
+  \definecolor{hrcolor-ref}{RGB}{223,52,30}
+  \definecolor{hrcolor-cite}{HTML}{2F8F00}
+  \definecolor{hrcolor-urls}{HTML}{092EAB}
+  \hypersetup{
+	linkcolor=hrcolor-ref,
+	citecolor=hrcolor-cite,
+	filecolor=magenta,
+	urlcolor=hrcolor-urls
+  }
+  \def\pdfBorderAttrs{/Border [0 0 0] }  % bez okrajů kolem odkazů / without margins around links
+  \pdfcompresslevel=9
+\fi
+\else % pro tisk budou odkazy, na které se dá klikat, černé / for the print clickable links will be black
+\ifx\pdfoutput\undefined % nejedeme pod pdflatexem / we are not using pdflatex
+\else
+  \usepackage{color}
+  \usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
+  \definecolor{links}{rgb}{0,0,0}
+  \definecolor{anchors}{rgb}{0,0,0}
+  \def\AnchorColor{anchors}
+  \def\LinkColor{links}
+  \def\pdfBorderAttrs{/Border [0 0 0] } % bez okrajů kolem odkazů / without margins around links
+  \pdfcompresslevel=9
+\fi
+\fi
+% Řešení problému, kdy klikací odkazy na obrázky vedou za obrázek
+% This solves the problems with links which leads after the picture
+\usepackage[all]{hypcap}
+\usepackage{listings}
+% Informace o práci/projektu / Information about the thesis
+%---------------------------------------------------------------------------
+\projectinfo{
+  %Prace / Thesis
+  project={BP},            %typ práce BP/SP/DP/DR  / thesis type (SP = term project)
+  year={2021},             % rok odevzdání / year of submission
+  date=\today,             % datum odevzdání / submission date
+  %Nazev prace / thesis title
+  title.cs={Dotazování nad RPM balíky},  % název práce v češtině či slovenštině (dle zadání) / thesis title in czech language (according to assignment)
+  title.en={RPM Package Query Resolver}, % název práce v angličtině / thesis title in english
+  %title.length={14.5cm}, % nastavení délky bloku s titulkem pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a thesis title for adjusting a line break (can be defined here or below)
+  %sectitle.length={14.5cm}, % nastavení délky bloku s druhým titulkem pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a second thesis title for adjusting a line break (can be defined here or below)
+  %dectitle.length={14.5cm}, % nastavení délky bloku s titulkem nad prohlášením pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a thesis title above declaration for adjusting a line break (can be defined here or below)
+  %Autor / Author
+  author.name={Tomáš},   % jméno autora / author name
+  author.surname={Korbař},   % příjmení autora / author surname 
+  %author.title.p={Bc.}, % titul před jménem (nepovinné) / title before the name (optional)
+  %author.title.a={Ph.D.}, % titul za jménem (nepovinné) / title after the name (optional)
+  %Ustav / Department
+  department={UITS}, % doplňte příslušnou zkratku dle ústavu na zadání: UPSY/UIFS/UITS/UPGM / fill in appropriate abbreviation of the department according to assignment: UPSY/UIFS/UITS/UPGM
+  % Školitel / supervisor
+  supervisor.name={Miroslav},   % jméno školitele / supervisor name 
+  supervisor.surname={Hrončok},   % příjmení školitele / supervisor surname
+  supervisor.title.p={Ing.},   %titul před jménem (nepovinné) / title before the name (optional)
+  supervisor.title.a={},    %titul za jménem (nepovinné) / title after the name (optional)
+  % Klíčová slova / keywords
+  keywords.cs={Balíky Dotazování Python RPM}, % klíčová slova v českém či slovenském jazyce / keywords in czech or slovak language
+  keywords.en={Packages Queries Python RPM}, % klíčová slova v anglickém jazyce / keywords in english
+  %keywords.en={Here, individual keywords separated by commas will be written in English.},
+  % Abstrakt / Abstract
+  abstract.cs={Cílem této práce je vytvořít nástroj umožňující efektivně získávat data o RPM balících
+  a dotazovat se jak na data jednotlivých balíků tak na vztahy, které mezi nimi existují. Nástroj musí být
+  schopen předčít dosavadní rychlost dotazování existujících nástrojů a umožňovat snadné rozšíření
+  o ukládání dalších dat nebo vztahů. Další z požadovaných funkcí je vizualizace výsledků podle
+  nastavení uživatele nebo poskytnutí výsledku v strojově zpracovatelném formátu.
+  }, % abstrakt v českém či slovenském jazyce / abstract in czech or slovak language
+  abstract.en={The goal of this thesis is to create a tool allowing effective retrieval of data about RPM packages
+  and perform queries both about their data and relations which exist between them. Tool has to be
+  able to outperform speed of currently existing tools and allow easy extension for preservation
+  of more data or relations. Another of required features is visualization of results according
+  to user settings or providing of results in machine readable format.
+  }, % abstrakt v anglickém jazyce / abstract in english
+  %abstract.en={An abstract of the work in English will be written in this paragraph.},
+  % Prohlášení (u anglicky psané práce anglicky, u slovensky psané práce slovensky) / Declaration (for thesis in english should be in english)
+  declaration={I hereby declare that this Bachelor's thesis was prepared as an original work by the author under the supervision of Mr. Miroslav Hrončok
+  The supplementary information was provided by Mr. Adam Rogalewicz
+  I have listed all the literary sources, publications and other sources, which were used during the preparation of this thesis.},
+  %declaration={I hereby declare that this Bachelor's thesis was prepared as an original work by the author under the supervision of Mr. X
+% The supplementary information was provided by Mr. Y
+% I have listed all the literary sources, publications and other sources, which were used during the preparation of this thesis.},
+  % Poděkování (nepovinné, nejlépe v jazyce práce) / Acknowledgement (optional, ideally in the language of the thesis)
+  acknowledgment={I would like to thank Mr. Miroslav Hrončok for his help during making of this thesis and Mr. Adam Rogalewicz for
+  watching that the project meets requirements for it to be usable.},
+  %acknowledgment={Here it is possible to express thanks to the supervisor and to the people which provided professional help
+%(external submitter, consultant, etc.).},
+  % Rozšířený abstrakt (cca 3 normostrany) - lze definovat zde nebo níže / Extended abstract (approximately 3 standard pages) - can be defined here or below
+  %extendedabstract={Do tohoto odstavce bude zapsán rozšířený výtah (abstrakt) práce v českém (slovenském) jazyce.},
+  %extabstract.odd={true}, % Začít rozšířený abstrakt na liché stránce? / Should extended abstract start on the odd page?
+  %faculty={FIT}, % FIT/FEKT/FSI/FA/FCH/FP/FAST/FAVU/USI/DEF
+  faculty.cs={Fakulta informačních technologií}, % Fakulta v češtině - pro využití této položky výše zvolte fakultu DEF / Faculty in Czech - for use of this entry select DEF above
+  faculty.en={Faculty of Information Technology}, % Fakulta v angličtině - pro využití této položky výše zvolte fakultu DEF / Faculty in English - for use of this entry select DEF above
+  department.cs={Ústav inteligentních systémů}, % Ústav v češtině - pro využití této položky výše zvolte ústav DEF nebo jej zakomentujte / Department in Czech - for use of this entry select DEF above or comment it out
+  department.en={Department of Intelligent Systems} % Ústav v angličtině - pro využití této položky výše zvolte ústav DEF nebo jej zakomentujte / Department in English - for use of this entry select DEF above or comment it out
+}
+
+% Rozšířený abstrakt (cca 3 normostrany) - lze definovat zde nebo výše / Extended abstract (approximately 3 standard pages) - can be defined here or above
+\extendedabstract{RPM packages are basically compressed archives containing software and metadata about
+their contents. When user wants to install software with RPM package manager, dnf for example,
+dnf looks through its configured repositories and locates package which provides function that the
+user requires. RPM package in its metadata contains information about what package provides,
+for example library, and list of packages which are required on host system for software to be
+working properly.
+
+As the distribution grows bigger and more complex, so does its RPM repositories and more
+maintenance is required to keep distribution in good state and useful to its users. This directly
+involves cooperation of developers which maintain particular pieces of distribution and their
+ability to access information quickly.
+
+While the most important information as dependencies and lists of files can be accessed in matter
+of seconds through dnf alone, information which involves data that is not necessary for package
+to be functional or is useful mainly to developers, often has to be searched for manually or
+through slow scripting. This fact leads us to the goal of this thesis and that is to invent a tool
+which will be able to quickly retrieve any data about packages, save this data in a cache and
+allow us to ask any question that we can think of.
+
+Example of this is a situation which frequently occurs during development and maintenance of
+every Fedora release. Fedora is maintained by community and thus it is no surprise when some of the
+members have no longer time to maintain packages owned by them. When this happens, maintainer
+has the ability to either pass the ownership to secondary maintainers or if there are none, orphan
+the package. Orphaned package is kept in official repositories for another 8 weeks and then is
+removed if no maintainer acquires it. Problem is that packages which depend on it, can not be
+installed. Normally maintainer of dependent package steps up and takes ownership of dependency but
+first he must know that such event occurred. Maintainers can be contacted but first we must know
+who should we contact. This is the moment when user has to individually query repositories
+about dependent packages and has to connect them with appropriate developers. Operation like
+this took tens of minutes with current state of dnf api and scripting. With proper caching and
+optimization, it could be possible to cut this time down to seconds.
+
+Another problem which this thesis is supposed to solve is resolving complicated queries. For example
+to assess how many frequently used packages will be affected by removal of some library. This
+requires that packages are connected with counts of their individual downloads and we choose
+only those packages that meet specified threshold. This way we can prioritize maintenance of
+heavily used libraries and fulfill the true requirements of distribution users.
+
+First of the greatest challenges of this project is to find an efficient data structure to store package
+data in such way that queries will be able to walk them quickly over and use algorithms which
+are able to quickly process relations. Another requirement is that this structure is well understandable
+and in best case serializable to file which we can later use as a cache. Cache should allow user
+to not retrieve and build structure every time the project is run but increase speed of query
+by avoiding this time consuming operation.
+
+Second is to choose how should the queries be specified.
+It has to be complex enough to be able to express complicated queries but easy to learn and
+read, so users do not have to spend long time studying the tool before they can use it for something
+useful. In the same time it is very important to assert that the queries will be optimized in
+such a way that there will not be any unnecessary evaluations to accelerate the whole execution
+process.
+
+Foundations on which any real life usable tool stands is an accurate documentation. The project has
+to be properly documented so users can find every information they need and are not slowed down by
+asking developers or studying how the project behaves in different situations.
+
+Last but not least requirement is the need for tool to be properly tested. Combination of unit and
+functional testing will be needed to ensure projects stability and to make long time maintenance
+easy. Developer has a lot choices when it comes to choosing testing technology but since language
+of project is Python it is only fitting that verified framework with great community
+such as Pytest is used.
+
+Project has a real life use case scenarios which came up during
+maintenance of packages in Fedora and RHEL distributions which will allow author and lead to
+identify whether it has fulfilled its purpose or not. To solve all these problems is the final goal
+of this thesis which is meant to prove that creation of such powerful tool is possible and it can
+accelerate work of package maintainers while making the dependent distribution more stable and secure.
+}
+% Začít rozšířený abstrakt na liché stránce? / Should extended abstract start on the odd page?
+%\extabstractodd{true}
+
+% nastavení délky bloku s titulkem pro úpravu zalomení řádku - lze definovat zde nebo výše / setting the length of a block with a thesis title for adjusting a line break - can be defined here or above
+%\titlelength{14.5cm}
+% nastavení délky bloku s druhým titulkem pro úpravu zalomení řádku - lze definovat zde nebo výše / setting the length of a block with a second thesis title for adjusting a line break - can be defined here or above
+%\sectitlelength{14.5cm}
+% nastavení délky bloku s titulkem nad prohlášením pro úpravu zalomení řádku - lze definovat zde nebo výše / setting the length of a block with a thesis title above declaration for adjusting a line break - can be defined here or above
+%\dectitlelength{14.5cm}
+
+% řeší první/poslední řádek odstavce na předchozí/následující stránce
+% solves first/last row of the paragraph on the previous/next page
+\clubpenalty=10000
+\widowpenalty=10000
+
+% checklist
+\newlist{checklist}{itemize}{1}
+\setlist[checklist]{label=$\square$}
+
+% Nechcete-li, aby se u oboustranného tisku roztahovaly mezery pro zaplnění stránky, odkomentujte následující řádek / If you do not want enlarged spacing for filling of the pages in case of duplex printing, uncomment the following line
+% \raggedbottom
+
+\begin{document}
+  % Vysazeni titulnich stran / Typesetting of the title pages
+  % ----------------------------------------------
+  \maketitle
+  % Obsah
+  % ----------------------------------------------
+  \setlength{\parskip}{0pt}
+
+  {\hypersetup{hidelinks}\tableofcontents}
+  
+  % Seznam obrazku a tabulek (pokud prace obsahuje velke mnozstvi obrazku, tak se to hodi)
+  % List of figures and list of tables (if the thesis contains a lot of pictures, it is good)
+  \ifczech
+    \renewcommand\listfigurename{Seznam obrázků}
+  \fi
+  \ifslovak
+    \renewcommand\listfigurename{Zoznam obrázkov}
+  \fi
+  % {\hypersetup{hidelinks}\listoffigures}
+  
+  \ifczech
+    \renewcommand\listtablename{Seznam tabulek}
+  \fi
+  \ifslovak
+    \renewcommand\listtablename{Zoznam tabuliek}
+  \fi
+  % {\hypersetup{hidelinks}\listoftables}
+
+  \ifODSAZ
+    \setlength{\parskip}{0.5\bigskipamount}
+  \else
+    \setlength{\parskip}{0pt}
+  \fi
+
+  % vynechani stranky v oboustrannem rezimu
+  % Skip the page in the two-sided mode
+  \iftwoside
+    \cleardoublepage
+  \fi
+
+  % Text prace / Thesis text
+  % ----------------------------------------------
+  \ifenglish
+    \input{xkorba02-RPM-Package-Query-Resolver-01-kapitoly-chapters-en}
+  \else
+    \input{xkorba02-RPM-Package-Query-Resolver-01-kapitoly-chapters}
+  \fi
+  
+  % Kompilace po částech (viz výše, nutno odkomentovat)
+  % Compilation piecewise (see above, it is necessary to uncomment it)
+  %\subfile{projekt-01-uvod-introduction}
+  % ...
+  %\subfile{chapters/projekt-05-conclusion}
+
+
+  % Pouzita literatura / Bibliography
+  % ----------------------------------------------
+\ifslovak
+  \makeatletter
+  \def\@openbib@code{\addcontentsline{toc}{chapter}{Literatúra}}
+  \makeatother
+  \bibliographystyle{bib-styles/Pysny/skplain}
+\else
+  \ifczech
+    \makeatletter
+    \def\@openbib@code{\addcontentsline{toc}{chapter}{Literatura}}
+    \makeatother
+    \bibliographystyle{bib-styles/Pysny/czplain}
+  \else 
+    \makeatletter
+    \def\@openbib@code{\addcontentsline{toc}{chapter}{Bibliography}}
+    \makeatother
+    \bibliographystyle{bib-styles/Pysny/enplain}
+  %  \bibliographystyle{alpha}
+  \fi
+\fi
+  \begin{flushleft}
+  \bibliography{xkorba02-RPM-Package-Query-Resolver-20-literatura-bibliography}
+  \end{flushleft}
+
+  % vynechani stranky v oboustrannem rezimu
+  % Skip the page in the two-sided mode
+  \iftwoside
+    \cleardoublepage
+  \fi
+
+  % Prilohy / Appendices
+  % ---------------------------------------------
+  \appendix
+\ifczech
+  \renewcommand{\appendixpagename}{Přílohy}
+  \renewcommand{\appendixtocname}{Přílohy}
+  \renewcommand{\appendixname}{Příloha}
+\fi
+\ifslovak
+  \renewcommand{\appendixpagename}{Prílohy}
+  \renewcommand{\appendixtocname}{Prílohy}
+  \renewcommand{\appendixname}{Príloha}
+\fi
+%  \appendixpage
+
+% vynechani stranky v oboustrannem rezimu
+% Skip the page in the two-sided mode
+%\iftwoside
+%  \cleardoublepage
+%\fi
+  
+\ifslovak
+%  \section*{Zoznam príloh}
+%  \addcontentsline{toc}{section}{Zoznam príloh}
+\else
+  \ifczech
+%    \section*{Seznam příloh}
+%    \addcontentsline{toc}{section}{Seznam příloh}
+  \else
+%    \section*{List of Appendices}
+%    \addcontentsline{toc}{section}{List of Appendices}
+  \fi
+\fi
+  \startcontents[chapters]
+  \setlength{\parskip}{0pt} 
+  % seznam příloh / list of appendices
+  % \printcontents[chapters]{l}{0}{\setcounter{tocdepth}{2}}
+  
+  \ifODSAZ
+    \setlength{\parskip}{0.5\bigskipamount}
+  \else
+    \setlength{\parskip}{0pt}
+  \fi
+  
+  % vynechani stranky v oboustrannem rezimu
+  \iftwoside
+    \cleardoublepage
+  \fi
+  
+  % Přílohy / Appendices
+  \ifenglish
+    \input{xkorba02-RPM-Package-Query-Resolver-30-prilohy-appendices-en}
+  \else
+    \input{xkorba02-RPM-Package-Query-Resolver-30-prilohy-appendices}
+  \fi
+  
+  % Kompilace po částech (viz výše, nutno odkomentovat)
+  % Compilation piecewise (see above, it is necessary to uncomment it)
+  %\subfile{xkorba02-RPM-Package-Query-Resolver-30-prilohy-appendices}
+  
+\end{document}

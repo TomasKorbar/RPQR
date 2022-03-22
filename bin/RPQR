@@ -25,7 +25,7 @@ from rpqr.query.RPQRQuery import RPQRQuery
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RPQR project CLI")
-    parser.add_argument("cfgPath", type=str, help="Path to configuration file")
+    parser.add_argument("--cfgPath", type=str, help="Path to configuration file", default="/etc/rpqr.conf")
     parser.add_argument("query", type=str,
                         help="Query in RPQR language", default="")
     parser.add_argument("--filterResult", type=str,

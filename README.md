@@ -34,5 +34,5 @@ cache=cache.json
 
 Then you can execute your queries through CLI interface and get visualized results.
 ```
-$ RPQR example.conf "NAMELIKE('libyang')" --visualize --filterResult "name" ""
+$ RPQR --cfgPath example.conf "NAMELIKE('libyang')" --visualize --filterResult "name" ""
 ```

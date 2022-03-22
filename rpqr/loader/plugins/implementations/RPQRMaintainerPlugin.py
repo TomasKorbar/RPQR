@@ -96,7 +96,7 @@ class RPQRMaintainerPlugin(RPQRDataPlugin):
             self.logger.error(
                 "RPQR was unable to retrieve maintainer list from supplied url %s" % self.listUrl)
 
-        return receivedResponse.json().get("RPMS", default={})
+        return receivedResponse.json().get("rpms", {})
 
     def prepareData(self, pkg: hawkey.Package) -> List[str]:
         """Get maintainers of package
