@@ -40,15 +40,11 @@ if __name__ == "__main__":
     cfgParser.read(args.cfgPath)
 
     pluginDirectories = json.loads(cfgParser["RPQR"]["pluginDirectories"])
-    repositories = json.loads(cfgParser["RPQR"]["repositories"])
     cacheFile = cfgParser["RPQR"]["cache"]
     namexrepository = []
-    pair = []
-    for k in repositories:
-        pair.append(k)
-        if len(pair) == 2:
-            namexrepository.append((pair[0], pair[1]))
-            pair = []
+    for sect in cfgParser.sections():
+        if sect.startswith("RPQRRepo_"):
+                namexrepository.append((sect.replace("RPQRRepo_", ""), cfgParser[sect]["url"]))
 
     rpqrcfg = RPQRConfiguration(pluginDirectories, namexrepository, cfgParser)
     loader = RPQRLoader(rpqrcfg)

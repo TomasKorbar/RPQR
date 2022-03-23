@@ -83,7 +83,8 @@ class RPQRMaintainerPlugin(RPQRDataPlugin):
             lgr.warning("url for retrieval of maintainers was not supplied")
             return
 
-        self.logger = rootLogger.getChild("RPQRDataPlugin") if rootLogger != None else None
+        self.logger = rootLogger.getChild(
+            "RPQRDataPlugin") if rootLogger != None else None
 
         self.listUrl = config.get("url")
 
@@ -114,4 +115,4 @@ class RPQRMaintainerPlugin(RPQRDataPlugin):
             for name, value in data.items():
                 RPQRMaintainerPlugin.packageToMaintainer[name] = value
         # owner alias json uses source names as keys
-        return RPQRMaintainerPlugin.packageToMaintainer[pkg.source_name]
+        return RPQRMaintainerPlugin.packageToMaintainer[pkg.name if pkg.source_name == None else pkg.source_name]

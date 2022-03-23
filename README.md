@@ -17,7 +17,7 @@ $ pip install .
 Proof of concept can be executed after installation by:
 
 ```
-$ RPQROrphaned "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/x86_64/os/"
+$ RPQROrphaned
 ```
 
 Program prints out packages that are orphaned in fedora 33 and maintainers
@@ -27,9 +27,14 @@ More general tool is RPQR script, which uses the RPQR module.
 First you need to provide configuration in the following format:
 ```
 [RPQR]
-pluginDirectories=["/bar/foo/pluginDirectory"]
-repositories=["repo alias", "http://example.org/repo"]
-cache=cache.json
+pluginDirectories=["./rpqr/loader/plugins/implementations"]
+cache=/var/tmp/rpqr.json
+
+[RPQRRepo_f34-repo]
+url=http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/34/Everything/x86_64/os/
+
+[RPQRMaintainerPlugin]
+url=https://src.fedoraproject.org/extras/pagure_owner_alias.json
 ```
 
 Then you can execute your queries through CLI interface and get visualized results.

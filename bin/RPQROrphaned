@@ -27,7 +27,8 @@ faster. That is our goal.
 if __name__ == "__main__":
     # set up configuration
     config = RPQRConfiguration([os.path.dirname(rpqr.loader.plugins.implementations.__file__)],
-                               [("fedora-repo", sys.argv[1])], {"RPQRMaintainerPlugin":{"url": "https://src.fedoraproject.org/extras/pagure_owner_alias.json"}})
+                               [("fedora-repo", "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/x86_64/os/"),
+                                ("source-repo", "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/source/tree/")], {"RPQRMaintainerPlugin":{"url": "https://src.fedoraproject.org/extras/pagure_owner_alias.json"}})
     loader = RPQRLoader(config)
     # parse information about packages
     graph = loader.createDatabase()
