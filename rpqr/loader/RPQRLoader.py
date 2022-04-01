@@ -31,7 +31,7 @@ class RPQRLoader:
         self.plugins = config.plugins
         self.logger = config.rootLogger.getChild("RPQRLoader")
 
-    def createDatabase(self, cache: str = None) -> networkx.MultiDiGraph:
+    def createDatabase(self, cache: str = None, clearCache: bool = False) -> networkx.MultiDiGraph:
         """ Get graph of packages with data and relations described by plugins
 
         :param cache: path to cache file, defaults to None
@@ -49,7 +49,7 @@ class RPQRLoader:
         for plugin in dataPlugins + relationPlugins:
             pluginRecords.append((plugin, plugin.__class__.__name__))
 
-        if cache is not None and os.path.exists(cache) and os.path.isfile(cache):
+        if cache is not None and os.path.exists(cache) and os.path.isfile(cache) and not clearCache:
             with open(cache, "r") as cFile:
                 graph = json_graph.node_link_graph(json.loads(cFile.read()))
             self.logger.info("Using found cache")
@@ -61,6 +61,8 @@ class RPQRLoader:
                         relationPlugins.remove(plugin)
                     self.logger.info(
                         "Will not build information for plugin %s as cache already contains it", name)
+        elif cache is not None and clearCache:
+            self.logger.info("Rebuilding cache")
         elif cache is not None:
             self.logger.info("Cache was not found so building it")
 

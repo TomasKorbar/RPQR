@@ -60,26 +60,25 @@ class RPQRConfiguration:
         for dir in self.pluginDirectories:
             sys.path.append(dir)
             pluginModules = os.listdir(dir)
+            for file in pluginModules:
+                moduleName = file[:-3]
+                # if file name starts with _ then it is most likely not a plugin
+                if moduleName.startswith("_"):
+                    continue
+                cfg = None
+                if moduleName in self.userConfiguration.keys():
+                    cfg = self.userConfiguration[moduleName]
 
-        for file in pluginModules:
-            moduleName = file[:-3]
-            # if file name starts with _ then it is most likely not a plugin
-            if moduleName.startswith("_"):
-                continue
-            cfg = None
-            if moduleName in self.userConfiguration.keys():
-                cfg = self.userConfiguration[moduleName]
+                if (cfg != None and cfg.get("disabled") == "1"):
+                    self._logger.info(
+                        "%s plugin was disabled in configuration" % moduleName)
+                    continue
+                module = importlib.import_module(moduleName)
+                pluginClass = getattr(module, moduleName)
 
-            if (cfg != None and cfg.get("disabled") == "1"):
-                self._logger.info(
-                    "%s plugin was disabled in configuration" % moduleName)
-                continue
-            module = importlib.import_module(moduleName)
-            pluginClass = getattr(module, moduleName)
-
-            pluginInstance = pluginClass(rootLogger=self.rootLogger,
-                                         config=cfg)
-            self.plugins.append(pluginInstance)
+                pluginInstance = pluginClass(rootLogger=self.rootLogger,
+                                            config=cfg)
+                self.plugins.append(pluginInstance)
 
     def isAttributeSupported(self, attributes: List[str]) -> Tuple[bool, str]:
         """ Find out whether attributes are supported by this configuration

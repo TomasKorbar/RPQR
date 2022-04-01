@@ -82,7 +82,7 @@ just one value, which is the only allowed possibility for string value stored in
 The store is just values after each other and are distinguished only by their respective offsets.
 
 \subsection*{The archive}
-The archive is a set of files and folders compressed with gzip compression algorithm. Its integrity
+The archive is a set of files and folders compressed with a compression algorithm. Its integrity
 can be verified with signature specified.
 
 \section{RPM repository}
@@ -167,6 +167,8 @@ While RPM repositories store metadata as a list in XML format or sqlite database
 are oriented about relationships between packages list does not have to be appropriate data
 structure for internal representation of package metadata.
 
+\newpage
+
 \begin{itemize}
   \item List
     \subitem Pros:
@@ -201,6 +203,8 @@ their collections for package managers. It is natively supported by Python and r
 read. XML is using tags to distinguish individual elements of serialized data. Its advantage
 is that it supports various encodings and even can contain comments so some things in serialized
 data could have additional explanations when needed.
+
+\newpage
 
 Example of XML data:
 \begin{lstlisting}
@@ -284,8 +288,6 @@ Example of Cypher query language:
 
 \textit{MATCH (peter: employee {name: 'Peter Parker'}) RETURN peter}
 
-\newpage
-
 Example of GraphQL query:
 
 \begin{lstlisting}
@@ -312,6 +314,7 @@ Example of how RPQR language could look:
 
 WHATDEPENDSON('libyang', 3) \& WHATDEPENDSON('libgcc', 3)
 
+\newpage
 
 Components that are needed for interpretation of RPQR language:
 \begin{itemize}
@@ -331,7 +334,6 @@ Components that are needed for interpretation of RPQR language:
   how to recognize language unit on input. Both of these techniques are using models for context-less
   languages such as formal grammatics. Formal grammatic is a list of rules which are used to check
   whether input is written in a language or not.
-\newpage
 
   \item \textbf{Interpreter}
   
@@ -374,8 +376,6 @@ and Python offers native support for it, this approach could prove to be painful
 overused. For example six or more commandline options would be difficult to track. That can be solved
 by providing user with means to set mostly static options through configuration file.
 
-\newpage
-
 With configuration file withstands more choices which needs to be done.
 \begin{itemize}
   \item Format of the configuration file
@@ -406,10 +406,12 @@ Illustration of proposed structure:
 bin
 bin/script
 project
-project/example\_module
+project/example_module
 test
-test/example\_module
+test/example_module
 \end{lstlisting}
+
+\newpage
 
 \section{Retrieval of information from repository}
 While there are approaches which would allow individual retrieval of metadata from repositories,
@@ -446,6 +448,8 @@ Naming conventions for files containing plugins:
 Plugin will contain one main class that can define how to retrieve data that it needs and commands
 that can be used to filter packages by this attribute or relationship. Enforcing of good structure
 will be done by providing base classes which plugins need to extend.
+
+\newpage
 
 \section{Internal structure of data representation}
 For RPQR to be able to effectively walk through packages and filter them by attributes and relationships
@@ -485,6 +489,8 @@ option3 = filepath
 option2 = 2
 \end{lstlisting}
 
+\newpage
+
 \section{Query language design}
 RQPR language is by nature of its use oriented on filtering sets and thus will constructed from
 statements and operations between them. This section will thoroughly describe the language and
@@ -498,6 +504,8 @@ and when not recognized can be marked as invalid.
 Finite state machine graph:
 
 \includegraphics[scale=0.5]{obrazky-figures/RPQR_FSM.png}
+
+\newpage
 
 The lexical tokens that occure in RPQR language are:
 \begin{itemize}
@@ -532,6 +540,8 @@ After all these problems are solved, RPQR will have abstract syntactic tree cont
 that is neccessary for exectution of statement e.g. commands that need to be executed first and operators
 located in depth accordingly to their precendence. This tree will be later processed by semantic
 analysis e.g. interpreter.
+
+\newpage
 
 Precedent syntactic table used for RPQR language:
 
@@ -616,6 +626,8 @@ with specific context. For better explanation how the query could work. The firs
 gather packages which contain string \textit{cups} in their name. The second could then filter only
 three first by their name in alphabetical order.
 
+\newpage
+
 \subsection*{Operators}
 
 \textbf{Intersection}
@@ -695,15 +707,18 @@ API will be using the same RPQR language as command line interface and queries w
 networkx graphs. This way, applications using the API can walk through nodes that represent packages
 and perform any transformation of graph that they deem useful.
 
-\section{Command line interface design}
-RPQR tool will be using 2 main positional options that have to be provided. The first one is location
-of configuration for reasons stated before and the second is query written in RQPR language. By default
-the output will go into standart output and log messages to standard error output.
+\newpage
 
-Optional options that can, but do not have to be specified will be whether user wants to see visualization
+\section{Command line interface design}
+RPQR tool will be using one main positional option that has to be provided and that is a query written
+in RPQR language. By default the output will go into standart output and log messages to standard error output.
+
+First two options that can, but does not have to be specified will be whether user wants to see visualization
 of result created by his query and what attributes or relations should be included in the output.
 Filtering of attributes and relations is helpful because with multiple plugins, there can be a lot
-of unnecessary data in the output that take a lot of space.
+of unnecessary data in the output that take a lot of space. Another important option is location
+of configuration file if user does not want to use the default location which is \textit{/etc/rpqr.conf}.
+The last option is whether the tool should invalidate cache and build it again.
 
 \chapter{Implementation and evaluation}
 With research and design complete, RPQR project can now be implemented in a best way possible.
@@ -711,7 +726,158 @@ This chapter will cover deep description of projects code and algorithms it uses
 assigned task. Each section will cover limitations of presented solution and what could be done
 in the future to overcome them. Special attention will be given to testing of project to find out
 whether it can be deployed in real world scenarios and whether it is stable enough to be maintainable
-in the future.
+in the future. Usage of RPQR project will also be described in a form of user manual and description
+of a way how new plugins are supposed to be developed using RPQR interface.
+
+\section{Important parts of implementation}
+This section will show the most important parts of implemenation and structure of Python code.
+
+\subsection*{RPQRConfiguration}
+RPQRConfiguration class serves for purposes of loading plugins and creating RPQR language structures
+neccessary for its successful parsing and interpreting. Instance of this class has to be created for
+every use of RPQR project and is used by all following components and their diverse operations.
+
+\newpage
+
+\textbf{Initialization of plugins}
+
+\begin{lstlisting}
+def _initializePlugins(self):
+  """ Load plugins from supplied directories
+  """
+  for dir in self.pluginDirectories:
+      sys.path.append(dir)
+      pluginModules = os.listdir(dir)
+      for file in pluginModules:
+          moduleName = file[:-3]
+          # if file name starts with _ then it is most likely not a plugin
+          if moduleName.startswith("_"):
+              continue
+          cfg = None
+          if moduleName in self.userConfiguration.keys():
+              cfg = self.userConfiguration[moduleName]
+
+          if (cfg != None and cfg.get("disabled") == "1"):
+              self._logger.info(
+                  "%s plugin was disabled in configuration" % moduleName)
+              continue
+          module = importlib.import_module(moduleName)
+          pluginClass = getattr(module, moduleName)
+
+          pluginInstance = pluginClass(rootLogger=self.rootLogger,
+                                      config=cfg)
+          self.plugins.append(pluginInstance)
+\end{lstlisting}
+
+This is the centerpiece of plugin loading. This method walks through all configured directories
+which according to configuration should contain plugin modules and if its file does not start with
+an underscore then attempts to import them and create their instance. There are two conditionals
+which relate to plugin configuration. The first one is checking whether a configuration related to
+this plugin exists and thus should be provided to it and the second one is there for a case when
+user does not want to use plugin at all, to save space for example or to speed up processing.
+
+\subsection*{RPQRLoader}
+RPQRLoader is a class responsible for loading of data about packages through plugins and constructing
+graph structure out of them. It is taking advantage of DNF API to retrieve the data as efficiently as
+possible and access them in the same way as package manager would.
+
+\newpage
+
+\textbf{Construction of graph}
+
+\begin{lstlisting}
+def createDatabase(self, cache: str = None) -> networkx.MultiDiGraph:
+  """ Get graph of packages with data and relations described by plugins
+
+  :param cache: path to cache file, defaults to None
+  :type cache: str, optional
+  :return: Graph of packages
+  :rtype: networkx.MultiDiGraph
+  """
+  graph = networkx.MultiDiGraph()
+  dataPlugins = [plugin for plugin in self.plugins if isinstance(
+      plugin, RPQRDataPlugin)]
+  relationPlugins = [plugin for plugin in self.plugins if isinstance(
+      plugin, RPQRRelationPlugin)]
+
+  pluginRecords = []
+  for plugin in dataPlugins + relationPlugins:
+      pluginRecords.append((plugin, plugin.__class__.__name__))
+
+  ...
+
+  av_query = self._getAvailableQuery()
+  q_avail = av_query.run()
+
+  for id, pkg in enumerate(q_avail):
+      graph.add_node(id)
+      for pluginInstance in dataPlugins:
+          pluginInstance: RPQRDataPlugin
+          pluginInstance.fillData(id, pkg, graph)
+
+  for id, pkg in enumerate(q_avail):
+      for pluginInstance in relationPlugins:
+          pluginInstance: RPQRRelationPlugin
+          pluginInstance.fillData(id, pkg, graph, av_query)
+
+  graph.graph["plugins"] = [name for (_, name) in pluginRecords]
+  ...
+  return graph
+\end{lstlisting}
+
+This method distinguishes between plugins that are supposed to add attributes to package nodes and
+plugins that create relations between individual packages. The first kind is executed first so
+relationship plugins can depend on them later. Each instance of plugin has its fillData method
+which is called for each package that was retrieved by DNF API. After the graph is build, list
+of plugins that were present during creating of this structure is saved into plugins list for easier
+detection of invalid cache.
+
+\subsection*{RPQRScanner}
+RPQRScanner is a class responsible for scanning of query entered in RPQR language format. It is able
+to recognize when there is a lexical error in the query and is used to parse string into tokens.
+
+\textbf{Implementation of finite state machine}
+
+\begin{lstlisting}
+def getTokens(self, input: str) -> Optional[List[RPQRToken]]:
+  ...
+  while curInputIndex < len(input) + 1:
+      if curInputIndex < len(input):
+          c = input[curInputIndex]
+      else:
+          c = ''
+      if curState == States.START:
+          if c == '':
+              break
+          elif c == '(':
+              curToken = RPQRToken(self.tokenTypes["leftBracelet"], c)
+              curState = States.LEFTBRACELET
+          elif c == ')':
+              curToken = RPQRToken(self.tokenTypes["rightBracelet"], c)
+              curState = States.RIGHTBRACELET
+          elif c == '&':
+              curToken = RPQRToken(self.tokenTypes["and"], c)
+              curState = States.AND
+          ...
+          curInputIndex += 1
+      elif curState == States.AND:
+          tokens.append(curToken)
+          curState = States.START
+      elif curState == States.OR:
+          tokens.append(curToken)
+          curState = States.START
+      elif curState == States.NUMBER:
+          if c.isnumeric():
+              curToken.appendToContent(c)
+              curInputIndex += 1
+          else:
+              tokens.append(curToken)
+              curState = States.START
+\end{lstlisting}
+
+Method getTokens is responsible for creating a list of tokens out of input. It is composed out of
+while cycle which parses characters and switches state of the machine accordingly. It is strictly
+implemented accordingly to graph of FSM which was mentioned earlier.
 
 \chapter{Conclusion}
 
