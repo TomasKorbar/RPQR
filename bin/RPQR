@@ -25,18 +25,20 @@ from rpqr.query.RPQRQuery import RPQRQuery
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RPQR project CLI")
-    parser.add_argument("--cfgpath", type=str, help="Path to configuration file", default="/etc/rpqr.conf")
+    parser.add_argument("--cfgpath", type=str,
+                        help="Path to configuration file", default="/etc/rpqr.conf")
     parser.add_argument("query", type=str,
                         help="Query in RPQR language", default="")
     parser.add_argument("--filterattributes", type=str,
                         help="Specify list of attributes which interest you in the result ",
                         default="")
     parser.add_argument("--filterrelations", type=str,
-                    help="Specify list of relations which interest you in the result ",
-                    default="")
+                        help="Specify list of relations which interest you in the result ",
+                        default="")
     parser.add_argument("--visualize", action="store_true",
                         default=False, help="Visualize result")
-    parser.add_argument("--clearcache", action="store_true", default=False, help="Clear cache")
+    parser.add_argument("--clearcache", action="store_true",
+                        default=False, help="Clear cache")
 
     args = parser.parse_args()
     cfgParser = configparser.ConfigParser()
@@ -47,7 +49,8 @@ if __name__ == "__main__":
     namexrepository = []
     for sect in cfgParser.sections():
         if sect.startswith("RPQRRepo_"):
-                namexrepository.append((sect.replace("RPQRRepo_", ""), cfgParser[sect]["url"]))
+            namexrepository.append(
+                (sect.replace("RPQRRepo_", ""), cfgParser[sect]["url"]))
 
     rpqrcfg = RPQRConfiguration(pluginDirectories, namexrepository, cfgParser)
     loader = RPQRLoader(rpqrcfg)
@@ -87,7 +90,8 @@ if __name__ == "__main__":
 
     # if result should not be visualized then just print it in JSON format to stdout
     if not args.visualize:
-        print(json.dumps(json_graph.node_link_data(result), indent=4, sort_keys=True))
+        print(json.dumps(json_graph.node_link_data(
+            result), indent=4, sort_keys=True))
         sys.exit(0)
 
     # labeling requires some more processing
