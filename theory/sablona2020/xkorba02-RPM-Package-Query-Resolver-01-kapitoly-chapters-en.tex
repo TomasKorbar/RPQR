@@ -724,10 +724,8 @@ The last option is whether the tool should invalidate cache and build it again.
 With research and design complete, RPQR project can now be implemented in a best way possible.
 This chapter will cover deep description of projects code and algorithms it uses to fulfill the
 assigned task. Each section will cover limitations of presented solution and what could be done
-in the future to overcome them. Special attention will be given to testing of project to find out
-whether it can be deployed in real world scenarios and whether it is stable enough to be maintainable
-in the future. Usage of RPQR project will also be described in a form of user manual and description
-of a way how new plugins are supposed to be developed using RPQR interface.
+in the future to overcome them. Usage of RPQR project will also be described in a form of user
+manual and description of a way how new plugins are supposed to be developed using RPQR interface.
 
 \section{Important parts of implementation}
 This section will show the most important parts of implemenation and structure of Python code.
@@ -878,6 +876,419 @@ def getTokens(self, input: str) -> Optional[List[RPQRToken]]:
 Method getTokens is responsible for creating a list of tokens out of input. It is composed out of
 while cycle which parses characters and switches state of the machine accordingly. It is strictly
 implemented accordingly to graph of FSM which was mentioned earlier.
+
+\subsection*{RPQRParser}
+
+RPQRParser is a class responsible for processing of lexical tokens and construction of abstract syntactic
+tree that can be interpreted in a strictly defined way. The class contains helper methods for easier
+manipulation with list of tokens and methods considered as callbacks to certain operations encountered
+in source query. These operations are uses of operators like \textit{\&} or \textit{\textasciitilde}
+which need the abstract syntactic tree to be constructed in a certain way.
+
+\textbf{parsing algorithm}
+
+\begin{lstlisting}
+while True:
+  while True:
+      if curInput.type in self.config.commandTypes.values():
+          commandRule = None
+          for rule in self.rules[4:]:
+              if rule[0] == curInput.type:
+                  commandRule = rule
+          childList = [curInput]
+          for indexMember, member in enumerate(commandRule[1:]):
+              # if command requires substatement, then cut its tokens
+              # and put it into queue
+              if member == self.nonTerminalTypes["statement"]:
+                ...
+              if argToken.type != member:
+                ...
+              if argToken.type in [self.config.tokenTypes["number"], self.config.tokenTypes["string"]]:
+                  childList.append(argToken)
+          newStatement = RPQRStackSymbol(
+              self.nonTerminalTypes["statement"], childList)
+          self.stack.append(newStatement)
+          curInput = tokens.pop(0)
+          continue
+
+      lastTerminalIndex = 0
+      ...
+
+      requiredAction = precedencTable[self.stack[lastTerminalIndex].type][curInput.type]
+      ...
+  # decide whether we need to keep parsing or everything is already done
+  if len(substatementQueue) == 0:
+      return rootStatement
+  else:
+      curStatement = substatementQueue.pop(0)
+      self.stack = [RPQRStackSymbol(self.config.tokenTypes["end"])]
+      tokens = curStatement.children
+      curInput = tokens.pop(0)
+\end{lstlisting}
+
+Parsing algorith is based on processing of statement queue that contains all individual statements
+that need to be parsed. The first cycle is going through queue of statements and the inner one is
+performing precedent syntactic analysis and calling appropriate callbacks. Interesting operation is
+that when substatement is encountered (command accepts statement as an argument) algorithm cuts this
+substatement out of the source and inserts it into the queue for further resolution. Because of trees
+structure, it is possible to resolve rest of the statement even when construction of substatement is not yet
+known.
+
+Current parsing algorithm is not able to handle commands that take dynamic number of arguments. This
+is a known limitation but because this feature was not needed in any relevant testing scenario,
+RPQR will not in time of this thesis contain such option.
+
+\newpage
+
+\subsection*{RPQRInterpreter}
+
+RPQRInterpreter is a class responsible for interpretation of RPQR language. It is mainly composed out
+of a algorithm which performs depth first search of abstract syntactic tree and resolves nodes from
+bottom to up direction.
+
+\textbf{Interpretation algorithm}
+
+\begin{lstlisting}
+while len(stack) > 0:
+    curNode = stack[-1]
+    curResult = resultStack[-1]
+    if curNode.operator is not None:
+        if len(curResult.childResults) < 1:
+            ...
+        elif curNode.operator != '~' and len(curResult.childResults) < 2:
+            ...
+        else:
+            # now we have all operands, we can begin resolution
+            validNodes = []
+            ...
+            stack.pop()
+            resultStack.pop()
+    else:
+        ...
+        notResolvedStatementFound = False
+        for argIndex, argType in enumerate(commandClass.args):
+            if argType == str or argType == int:
+                # literals can be resolved right away
+                if (argIndex > len(curResult.childResults)-1):
+                    curResult.childResults.append(RPQRResultTree(
+                        curNode.children[1:][argIndex].content, []))
+                else:
+                    continue
+            elif argType == list:
+                if (argIndex > len(curResult.childResults)-1):
+                    ...
+                    break
+                else:
+                    continue
+        if notResolvedStatementFound:
+            continue
+        arguments = []
+        for partResult in curResult.childResults:
+            arguments.append(partResult.result)
+        curResult.result = commandClass.execute(graph, arguments)
+        stack.pop()
+        resultStack.pop()
+\end{lstlisting}
+
+Algorithm distinguishes between nodes that represent statement composed out of operator and operands
+and commands that filter packages. Processing of such nodes differs, because operators are built in
+and have fixed number of arguments while commands are defined by plugins and every command can have
+different number of arguments. Algorithm walks through abstract syntactic tree and performs partial
+operations by calling execute method of plugins with already loaded arguments. When the root node
+is reached by resolution and its result is known, then the result can be returned by \textit{performCommands}
+method and formated by users requirements.
+
+\newpage
+
+\subsection*{RPQR script}
+RPQR script is a command line utility which allows user to use RPQR project comfortably. It is designed
+to take advantage of the whole project and its features while providing user with the ability to
+controll for example when a cache file should be invalidated and overwritten.
+
+\textbf{RPQR script implemenation}
+
+\begin{lstlisting}
+  rpqrcfg = RPQRConfiguration(pluginDirectories, namexrepository, cfgParser)
+  loader = RPQRLoader(rpqrcfg)
+
+  graph = loader.createDatabase(cacheFile, args.clearcache)
+  # we will not be performing empty query
+  if len(args.query) == 0:
+      sys.exit(0)
+  result = RPQRQuery.performQuery(args.query, graph, rpqrcfg)
+
+  if result is None:
+      sys.exit(1)
+
+  # we will filter result attributes according to supplied parameters
+  if len(args.filterattributes) != 0 or len(args.filterrelations) != 0:
+      ...
+      if len(args.filterattributes.split(";")[0]) != 0:
+          for node in result.nodes:
+              for key in list(result.nodes[node].keys()):
+                  if not key in args.filterattributes.split(";"):
+                      del result.nodes[node][key]
+      if len(args.filterrelations.split(";")[0]) != 0:
+          for node in result.nodes:
+              for u, v, edge_key in graph.out_edges([node], keys=True):
+                  if not edge_key in args.filterrelations.split(";"):
+                      graph.remove_edge(u, v, key=edge_key)
+
+  # if result should not be visualized then just print it in JSON format to stdout
+  if not args.visualize:
+      print(json.dumps(json_graph.node_link_data(
+          result), indent=4, sort_keys=True))
+      sys.exit(0)
+
+  # labeling requires some more processing
+  ...
+  pos = networkx.spring_layout(result)
+  networkx.draw_networkx(result, pos=pos, with_labels=True, labels=labelDict)
+  edgeLabels = dict([((n1, n2), key) for n1, n2, key in result.edges])
+  networkx.draw_networkx_edge_labels(result, pos=pos, edge_labels=edgeLabels)
+  plt.show()
+\end{lstlisting}
+
+Implementation of RPQR script uses RPQR API and allows user to specify whether the result should be
+visualized or printed out through the standard output. Another very useful feature is filtering of
+attributes and relations that should be included in the output. Script is using matplotlib python
+library to render graph of packages if required.
+
+\section{User manual}
+This section contains manual of RPQR tool and detailed description of a way how it is intended to be
+used. Another part provides information about developing of plugins and scripts that are using RPQR
+API to retrieve and filter package metadata.
+
+\textbf{NAME}
+
+RPQR - RPM package query resolver
+
+\textbf{SYNOPSIS}
+
+RPQR [-h] [--cfgpath CFGPATH] [--filterattributes FILTERATTRIBUTES] [--filterrelations FILTERRELATIONS]
+[--visualize] [--clearcache]
+query
+
+\textbf{DESCRIPTION}
+
+RPQR utility is supposed to make querying RPM repositories about package metadata easy by providing
+user with means to filter them by such metadata and individual types of relations that occure between
+them. Utility is configurable through configuration file which is located by default in \textit{/etc/rpqr.conf}.
+
+\textbf{OPTIONS}
+
+\begin{itemize}
+  \item -h, --help
+    \subitem Show help message and exit
+  \item --cfgpath CFGPATH
+    \subitem Path to configuration file
+  \item --filterattributes FILTERATTRIBUTES
+    \subitem Specify list of attributes which interest you in the result. If left empty, then all attributes will be present in result
+  \item --filterrelations FILTERRELATIONS
+    \subitem Specify list of relations which interest you in the result. If left empty, then all relations will be present in result
+  \item --visualize
+    \subitem Visualize result
+  \item --clearcache
+    \subitem Clear cache
+\end{itemize}
+
+\textbf{CONFIGURATION FILE}
+
+Following configuration file should illustrate general principles of how the RPQR utility behaviour
+can be changed with it.
+
+\begin{lstlisting}
+[RPQR]
+pluginDirectories=["./rpqr/loader/plugins/implementations"]
+cache=/var/tmp/rpqr.json
+
+[RPQRRepo_f34-repo]
+url=http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/34/Everything/x86_64/os/
+
+[RPQRMaintainerPlugin]
+url=https://src.fedoraproject.org/extras/pagure_owner_alias.json
+\end{lstlisting}
+
+First section named \textit{RPQR} is main configuration section that contains the most important
+setting. \textit{pluginDirectories} is array of directories which contain python modules with RPQR
+plugins. \textit{cache} is path to cache file, when this path is not supplied then RPQR utility
+will not use cache.
+
+Second section named \textit{RPQRRepo\_f34-repo} is meant to set up repository which user wants to
+query. There can be one to n number of repositories and they all have to be configured in their own
+section with prefix \textit{RPQRRepo\_} and member url which specifies base URL of the repository.
+
+The third section is required for \textit{RPQRMaintainerPlugin}. Each plugin can have its own section
+of configuration and member disabled, which when set to \textit{1} will prevent this plugin from
+working. Plugin configuration is described by plugins individually and is mentioned here only for
+clarification of example. 
+
+\textbf{RPQR language}
+
+RPQR language serves as a means to specify what packages user wants to see in result. Take advantage
+of operators to create appropriate combination of commands to get the results that you want.
+
+\textbf{Operators}
+
+\begin{itemize}
+  \item \& - package has to conform to both right and left statements
+  \item  | - package has to conform to either left or right statements
+  \item  \textasciitilde - package must not conform to statement located on the right 
+\end{itemize}
+
+\textbf{Parenthesis}
+
+RPQR also supports parenthesis to provide further means to set priority of statements that are specified.
+Use parenthesis to make your query more readable and to make sure that the result is what you expect.
+\textit{statement1 \& (statement2 | statement3)} This statement is not equal to the version without
+parenthesis specified like this \textit{statement1 \& statement2 | statement3}. Semantic of the first
+statement is: \textbf{Find packages that conform to statement1 and in the same time conform to either
+statement2 or statement3}. On the other hand, the second statement meaning is: \textbf{Find packages
+that conform to both statement1 and statement2 but if package conforms to statement3 then it does not
+have to conform either to statement1 or statement2}
+
+\textbf{Official distributed plugins documentation}
+
+This section of the manual contains documentation about behaviour of plugins that are officially
+distributed with the RPQR tool and supported by the maintainers.
+
+\textbf{RPQRNamePlugin}
+
+RPQRNamePlugin is one of the most important plugins for RPQR utility. It gathers complete name of the
+package, meaning its name, version, release and architecture. It is an attribute plugin and inserts
+attribute \textit{name} into the package.
+
+\begin{itemize}
+  \item Added attribute: 'name'
+  \item Added commands: 'NAME', 'NAMELIKE', 'SUBSETNAMELIKE'
+  \item Depends on plugins: None
+\end{itemize}
+
+\textbf{Commands provided by RPQRNamePlugin}
+
+\textbf{NAME}
+
+Required arguments: name (string literal)
+
+\textit{NAME} command filters out only package that has the exact same name attribute as was specified
+with the name argument.
+
+Example of use: \textit{NAME('libyang-1.0.225-1.fc34.x86\_64')}
+
+\textbf{NAMELIKE}
+
+Required arguments: name (string literal)
+
+\textit{NAMELIKE} command filters out packages that contain substring specified with the argument
+\textit{name}.
+
+Example of use: \textit{NAMELIKE('libyang')}
+
+\textbf{SUBSETNAMELIKE}
+
+Required arguments: name (string literal), statement (RPQRLanguage statement)
+
+\textit{SUBSETNAMELIKE} command filters out packages returned by argument \textit{statement} that
+contain substring specified with the argument \textit{name}.
+
+Example of use: \textit{SUBSETNAMELIKE('x86\_64', NAMELIKE('libyang'))}
+
+Explanation of the example semantics: This query returns packages that contain \textit{libyang} in their
+name and in the same time \textit{x86\_64} substring. Difference between this statement and
+\textit{NAMELIKE('x86\_64') \& NAMELIKE('libyang')} is that the first query will be faster, because
+it has to go through only subset of packages.
+
+\textbf{RPQRDependencyPlugin}
+
+RPQRDependencyPlugin is relation plugin which gathers information about package dependencies and
+creates dependency relations between nodes that represent them in RPQR graph of packages.
+
+\begin{itemize}
+  \item Added relation: 'depends'
+  \item Added commands: 'ONWHATDEPENDS', 'WHATDEPENDSON'
+  \item Depends on plugins: RPQRNamePlugin
+\end{itemize}
+
+\textbf{Commands provided by RPQRDependencyPlugin}
+
+\textbf{ONWHATDEPENDS}
+
+Required arguments: name (string literal), depth (numeric literal)
+
+\textit{ONWHATDEPENDS} command filters out packages on which package, with name attribute matching
+\textit{name} argument, depends. \textit{depth} argument is controlling the depth to which RPQR
+should go when gathering dependencies from the graph. Depth zero means that only the package specified
+by name will be present in output, value one causes that only direct dependencies will be present and
+so on.
+
+Example of use: \textit{ONWHATDEPENDS('libyang-1.0.225-1.fc34.x86\_64', 1)}
+
+\textbf{WHATDEPENDSON}
+
+Required arguments: name (string literal), depth (numeric literal)
+
+\textit{WHATDEPENDSON} command filters out packages that depend on package, with name attribute matching
+\textit{name} argument. \textit{depth} argument is controlling the depth to which RPQR
+should go when gathering dependent packages from the graph. Depth zero means that only the package specified
+by name will be present in output, value one causes that only directly dependendent packages will be present and
+so on.
+
+Example of use: \textit{WHATDEPENDSON('libyang-1.0.225-1.fc34.x86\_64', 1)}
+
+\textbf{RPQRMaintainerPlugin}
+
+RPQRMaintainerPlugin is an attribute plugin which gathers information about maintainers which work
+on packages. It inserts attribute \textit{maintainer} into packages. Plugin unfortunately depends
+on the format of list of maintainers which has to be in JSON.
+
+\begin{itemize}
+  \item Added attribute: 'maintainer'
+  \item Added commands: 'MAINTAINER', 'DEPENDSONUSER'
+  \item Depends on plugins: RPQRDependencyPlugin
+\end{itemize}
+
+\textbf{Commands provided by RPQRMaintainerPlugin}
+
+\textbf{MAINTAINER}
+
+Required arguments: maintainers name (string literal)
+
+\textit{MAINTAINER} command filters out packages that have maintainer specified with argument
+maintainers name in list of their maintainers.
+
+Example of use: \textit{MAINTAINER('tkorbar')}
+
+\textbf{DEPENDSONUSER}
+
+Required arguments: maintainers name (string literal), depth (numeric literal)
+
+\textit{DEPENDSONUSER} command filters out packages that depend on work of maintainer specified with
+argument \textit{maintainers name}. That means that depth zero will retrieve packages that have specified
+maintainer in list of its maintainers as \textit{MAINTAINER} command would. Values higher than zero
+will retrieve packages that depend on those retrieved with depth zero.
+
+Example of use: \textit{DEPENDSONUSER('tkorbar', 1)}
+
+\textbf{RPQRMaintainerPlugin configuration}
+
+RPQRMaintainerPlugin has one additional variable for configuration not included in the default set for
+all plugins. It is variable url which specifies location of maintainer list.
+
+Example:
+\begin{lstlisting}
+[RPQRMaintainerPlugin]
+url=https://src.fedoraproject.org/extras/pagure_owner_alias.json
+\end{lstlisting}
+
+\textbf{LICENSE}
+
+You may copy, distribute and modify the software as long as you track changes/dates in source files.
+Any modifications to or software including (via compiler) GPL-licensed code must also be made available
+under the GPL along with build \& install instructions.
+
+\section{API documentation and example of scripting}
+
+
 
 \chapter{Conclusion}
 

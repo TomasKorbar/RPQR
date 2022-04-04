@@ -55,7 +55,7 @@ class RPQRFilteringCommand:
 
         while len(nodes) > nodeIndex:
             curNode = nodes[nodeIndex]
-            if maxDepth != -1 and graph.nodes[curNode]["depth"] > maxDepth:
+            if graph.nodes[curNode]["depth"] >= maxDepth:
                 nodeIndex += 1
                 continue
             edges = graph.in_edges([curNode], keys=True) if inEdges else graph.out_edges(
