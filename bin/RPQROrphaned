@@ -31,10 +31,10 @@ if __name__ == "__main__":
                                 ("source-repo", "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/source/tree/")],
                                 {"RPQRMaintainerPlugin":{"url": "https://src.fedoraproject.org/extras/pagure_owner_alias.json"}})
     query = RPQRQuery(config)
-    result = RPQRQuery.performQuery("MAINTAINER('orphan')")
+    result = query.performQuery("MAINTAINER('orphan')")
     for node in list(result.nodes):
         # now we will recursively gather packages which depend on every orphaned package
-        dependentPackages = RPQRQuery.performQuery(
+        dependentPackages = query.performQuery(
             "WHATDEPENDSON('%s', 20)" % result.nodes[node]["name"])
         # get maintainers affected by this change
         maintainerList = []

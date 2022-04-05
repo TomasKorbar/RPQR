@@ -53,15 +53,13 @@ if __name__ == "__main__":
                 (sect.replace("RPQRRepo_", ""), cfgParser[sect]["url"]))
 
     rpqrcfg = RPQRConfiguration(pluginDirectories, namexrepository, cfgParser)
-    loader = RPQRLoader(rpqrcfg)
-
-    graph = loader.createDatabase(cacheFile, args.clearcache)
+    userQuery = RPQRQuery(rpqrcfg)
 
     # we will not be performing empty query
     if len(args.query) == 0:
         sys.exit(0)
 
-    result = RPQRQuery.performQuery(args.query, graph, rpqrcfg)
+    result = userQuery.performQuery(args.query)
 
     if result is None:
         sys.exit(1)
@@ -84,9 +82,9 @@ if __name__ == "__main__":
                         del result.nodes[node][key]
         if len(args.filterrelations.split(";")[0]) != 0:
             for node in result.nodes:
-                for u, v, edge_key in graph.out_edges([node], keys=True):
+                for u, v, edge_key in result.out_edges([node], keys=True):
                     if not edge_key in args.filterrelations.split(";"):
-                        graph.remove_edge(u, v, key=edge_key)
+                        result.remove_edge(u, v, key=edge_key)
 
     # if result should not be visualized then just print it in JSON format to stdout
     if not args.visualize:
@@ -99,7 +97,7 @@ if __name__ == "__main__":
     labelDict = {}
     for nodeId in result.nodes:
         label = ""
-        for (attr, value) in graph.nodes[nodeId].items():
+        for (attr, value) in result.nodes[nodeId].items():
             label += "%s=%s\n" % (attr, value)
         labelDict[nodeId] = label
     pos = networkx.spring_layout(result)

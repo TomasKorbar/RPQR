@@ -4,7 +4,6 @@ Author: Tomáš Korbař (tomas.korb@seznam.cz)
 Copyright 2021 - 2022 Tomáš Korbař
 '''
 
-from tkinter.messagebox import NO
 from typing import Optional
 import networkx
 
@@ -20,10 +19,10 @@ class RPQRQuery:
     """
     def __init__(self, config: RPQRConfiguration) -> None:
         self._config = config
-        loader = RPQRLoader(self._config)
-        self._graph = loader.createDatabase()
+        self._loader = RPQRLoader(self._config)
+        self._graph = self._loader.createDatabase()
 
-    def performQuery(self, query: str, graph: networkx.MultiDiGraph = None, config: RPQRConfiguration = None) -> Optional[networkx.MultiDiGraph]:
+    def performQuery(self, query: str) -> Optional[networkx.MultiDiGraph]:
         """ perform query on graph
         :param query: query in RPQR language
         :type query: str
