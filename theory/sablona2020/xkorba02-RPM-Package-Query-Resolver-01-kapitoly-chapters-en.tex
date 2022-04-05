@@ -9,30 +9,30 @@ The fact that the whole system is stable and comfortable to use is a result of a
 maintainers who work together to ensure that all packages are working and their
 requirements are met.
 
-An efficient maintenance requires accurate information which maintainers get from multiple sources
-and are using many tools to retrieve. For example, which packages depend on their own packages and thus which
-maintainers should they communicate with when encountering disturbing changes. Often the information
+Efficient maintenance requires accurate information, which maintainers get from multiple sources
+and use many tools to retrieve. For example, which packages depend on their own packages and thus which
+maintainers should they communicate with when encountering disturbing changes? Often the information
 is not easy to acquire and slows down developers by forcing them to manually search through different
-places. To solve this problem a new tool which is able to store and filter any information about
-packages is required as no other exist in the moment of making this thesis.
+places. To solve this problem, a new tool that is able to store and filter any information about
+packages is required as no other exists in the moment.
 
-RPQR is an originally proposed tool which is supposed to make maintainers life easier by allowing them to describe how
-to acquire the data only once and then being able to retrieve it on demand. It is flexible
-enough to store any new kind of data and to search packages based on combination of any of them while
+RPQR is an originally proposed tool that is supposed to make maintainers' life easier by allowing them to describe how
+to acquire the data only once and then be able to retrieve it on demand. It is flexible
+enough to store any new kind of data and to search packages based on a combination of any of them while
 also providing the option to accelerate queries by making specialized commands.
 RPQR also lets users build a cache which makes further queries faster and thus saves time while
 doing everyday work.
 
-the tool is able to be directly used by other projects through provided API or it can be used
-by user as any other command line project. Users are also able to visualize their
-results for faster understanding of the results.
+The tool is able to be directly used by other projects through provided API. Tt can also be used
+by a user as any other command-line project. Users are also able to visualize their
+results for a faster understanding of the results.
 
 \chapter{Theory and current state}
 While crucial information about a RPM package is stored directly inside it within the header section,
 additional information as who maintains it or which bugs are currently known has to be searched
 in external sources of information. This chapter describes RPM packages and technologies which
 currently exist for working with them. Then we continue with a description of other subjects which are needed
-to successfully design and implement RPQR project.
+to successfully design and implement the RPQR project.
 
 \section{RPM package}
 RPM packages have their own file format\cite{RPMFileFormat}. It is composed of four parts with their specific purposes.
@@ -49,7 +49,7 @@ inflexibility and is noted here only for completeness of file format description
 
 \subsection*{The signature}
 The signature is allowing package integrity and optionally authenticity to be verified. It holds
-little purpose for RPQR but it is important because dnf uses it and RPQR is using dnf API.
+little purpose for RPQR but it is important because DNF uses it and RPQR is using DNF API.
 
 \subsection*{The header}
 The header is the most interesting part from perspective of RPQR project, because it contains
@@ -57,7 +57,7 @@ detailed crucial information about the package. It is composed of tags which des
 aspects of the bundled software. Examples of these tags can be \mbox{\textit{RPMTAG\_VERSION}}
 specifying version of the package or \textit{RPMTAG\_RELEASE} which specifies what release of
 this version this is. Header is parsed by a software which is making metadata structure of RPM
-repositories and this structure is then used by the dnf package manager to find appropriate
+repositories and this structure is then used by the DNF package manager to find appropriate
 packages that the user needs.
 
 \begin{lstlisting}
@@ -87,12 +87,12 @@ can be verified with signature specified.
 
 \section{RPM repository}
 RPM repositories are directory structures which contain RPM packages and metadata which are needed
-to quickly locate packages that user needs. Metadata are created by createrepo \cite{RPMRepository}
-utility and accessed by dnf package manager. 
+to quickly locate packages that user needs. Metadata are created by \textit{createrepo} \cite{RPMRepository}
+utility and accessed by DNF package manager. 
 
 \subsection*{Repodata}
 Every RPM repository contains folder \textit{repodata} which contains data about contents of the
-repository. There is a file \textit{repomd.xml} containing xml structure indicating where should
+repository. There is a file \textit{repomd.xml} containing XML structure indicating where should
 package manager look for databases with information about packages.
 
 Important databases:
@@ -112,14 +112,14 @@ RPM package manager supports more low level operations with packages than DNF do
 to build source of a project according to specfile and create distributable packages. More of the
 important operations are also reading of the metadata and verification of installed software, in
 case that it is not working properly. Installation of dependencies would have to be handled by user
-manually so rpm utility is not often used by end users of the systems.
+manually so rpm utility is not often used by end-users of the systems.
 
 \subsection*{YUM package manager}
 Yum package manager is historically the first manager that allowed easy downloading of packages
 from remote repositories and handling their dependencies \cite{YUMPackageManager}. It is currently deprecated and has been
 replaced by DNF. Reasons for deprecation and replacement were that YUM was not properly documented,
-it was not ready for switch to python3 and algorithm for dependency resolvement was not strong enough
-to handle all problems that withstand in modern RPM based linux distributions.
+it was not ready for switch to python3 and algorithm for dependency resolution was not strong enough
+to handle all problems that withstand in modern RPM-based Linux distributions.
 
 \subsection*{DNF package manager}
 DNF package manager is a successor of the older YUM package manager \cite{DNFPackageManager}. It allows user to install and remove software
@@ -130,11 +130,11 @@ that needs to be stated is that DNF provides python API which can be used by oth
 from repositories and distinguish them.
 
 DNF is the only tool that is currently able to query repositories for metadata which are specified
-in packages. An example of frequently used query is:
+in packages. An example of a frequently used query is:
 
 \textit{\$ dnf repoquery --whatprovides /usr/bin/bash}
 
-This command issues that dnf should execute command repoquery filtering by tag \mbox{\textit{provides}}
+This command issues that DNF should execute command \textit{repoquery} filtering by tag \mbox{\textit{provides}}
 and find all packages that provide file \textit{/usr/bin/bash}. DNF is able to search for packages based by
 attributes which are supplied within the package, but it is not able to retrieve additional information
 or query based on complex relationships. It is not its job to resolve more difficult queries and
@@ -144,7 +144,7 @@ it would be wrong to force it to by extending its capabilities.
 DNF provides python API through which developer can interact with repositories and retrieve information.
 At first instance of \textit{Base} class has to be created and then specify repositories from which
 metadata should be retrieved. Call to \textit{fill\_sack} method after that will load the metadata
-and API can then execute queries which the dnf tool supports.
+and API can then execute queries which the DNF tool supports.
 
 Example of how is dnf API used in RPQR project:
 \begin{lstlisting}
@@ -158,12 +158,12 @@ Example of how is dnf API used in RPQR project:
 \section{Storing techniques and query language}
 As was stated before, it is crucial to choose the right technologies to store package metadata in
 such a format that they can be read by human reader while also easily parsable and serializable.
-This section will describe possible formats. Another part will be explaining existing query
+This section will describe possible formats. Another part will be explaining the existing query
 languages which could be used for RPQR queries and their pros and cons in context of describing
 package metadata.
 
 \subsection*{Data structures}
-While RPM repositories store metadata as a list in XML format or sqlite database, for use cases that
+While RPM repositories store metadata as a list in XML format or \textit{sqlite} database, for use cases that
 are oriented about relationships between packages list does not have to be appropriate data
 structure for internal representation of package metadata.
 
@@ -198,7 +198,7 @@ how much readability it can provide for human developer and whether it can used 
 repositories such as git or mercury.
 
 \subsubsection*{XML}
-Extensible markup language\cite{XMLFormat} is used by repocreate utility which is parsing package metadata and creating
+Extensible markup language\cite{XMLFormat} is used by \textit{repocreate} utility which is parsing package metadata and creating
 their collections for package managers. It is natively supported by Python and relatively easy to
 read. XML is using tags to distinguish individual elements of serialized data. Its advantage
 is that it supports various encodings and even can contain comments so some things in serialized
@@ -250,15 +250,15 @@ element:
 
 \subsubsection*{Pickle}
 For completeness here is mentioned even Python pickle format\cite{PickleFormat} for object serialization. Because
-it is binary it can be parsed more quickly and support additional acceleration of RPQR execution.
+it is binary, it can be parsed more quickly and support the additional acceleration of RPQR execution.
 There is an issue with execution of arbitrary code when parsing pickle structures which does not
-occur in previously mentioned formats. Unlike the previous formats, it is not human readable
+occur in previously mentioned formats. Unlike the previous formats, it is not human-readable
 and thus unfortunately not appropriate to be used for package data structures that should be accessible
 by different tools.
 There is not an example because it would not make sense to show binary data.
 
 \subsection*{Query languages}
-For purposes of RPQR project, there needs to be a specification how to describe queries. Currently
+For purposes of RPQR project, there needs to be a specification how to describe queries. Currently,
 there are many approaches. In this section there will be description of some of them and their features
 which could prove useful for selecting packages and their attributes.
 
@@ -266,22 +266,22 @@ which could prove useful for selecting packages and their attributes.
 Structured Query Language\cite{SQL} is a domain-specific language which is widely used to interaction with
 relation databases. SQL is able to select records based upon their attributes and relations but
 is not capable of describing complex recursive queries about graphs. Another caveat is that for Python
-application, using standard Python libraries, to be able to use SQL, it would need to hold an instance of sqlite database in memory and
+application, using standard Python libraries, to be able to use SQL, it would need to hold an instance of \textit{sqlite} database in memory and
 that could prove to be unnecessary overhead which could slow execution down.
 
 Example of SQL query:
 \textit{SELECT * FROM table WHERE id = 3}
 
 \subsubsection*{GraphQL}
-GraphQL\cite{GraphQL} is an open source query language which allows developers to implement their own interpretation
+GraphQL\cite{GraphQL} is an open-source query language which allows developers to implement their own interpretation
 of individual query parameters. It is used in REST APIs to allow client applications to retrieve data
 effectively from a server without it having to transfer any unnecessary data. Its flexibility is
 a great advantage but queries are not as readable as they would be in SQL language.
 
 \subsection*{Cypher query language}
-Cypher query language is an implementation of opencypher specification. It is meant for work with
+Cypher query language is an implementation of \textit{opencypher} specification. It is meant for work with
 neo4j graph database and is developed for such purpose. For application to be able to get advantage
-of cypher, it needs to use neo4j database which can result in too big an overhead for utilites
+of cypher, it needs to use neo4j database which can result in too big an overhead for utilities
 designed with one specific purpose in mind.
 
 Example of Cypher query language:
@@ -305,7 +305,7 @@ Creating own query language is always and option and it holds enormous power in 
 bend the language to the specific purpose that RPQR project needs. Problem is that developing
 and maintaining language takes time and energy. For a language to be functional, RPQR would
 need to implement its own components like scanner, parser and interpreter. In the essence,
-domain specific language for RPQR would need to be relatively simple. There is a requirement
+domain-specific language for RPQR would need to be relatively simple. There is a requirement
 to interpret statements which result is always set of nodes that represent packages. These
 statements consists of commands that take values and other statements as arguments and operators
 which realize basic set operations as is union or intersection.
@@ -321,7 +321,7 @@ Components that are needed for interpretation of RPQR language:
   \item \textbf{Scanner}
 
   Scanner is used to convert source text of the language to tokens for further processing by parser.
-  Its crucial part is finite state machine which reacts to characters in input and recognizes lexical
+  Its crucial part is a finite state machine which reacts to characters in input and recognizes lexical
   tokens. Scanner is also able to tell user when some lexical error occurs and query needs to be
   changed for it to be valid.
   
@@ -331,16 +331,16 @@ Components that are needed for interpretation of RPQR language:
   internal representation of source text on input. Parser is able to recognize syntactic errors
   which occur during parsing and optionally inform user about them. There are multiple techniques
   for syntactic analysis as Top-Down Parsing or Bottom-Up Parsing which are basically algorithms
-  how to recognize language unit on input. Both of these techniques are using models for context-less
+  how to recognize language unit on input. Both of these techniques use models for context-less
   languages such as formal grammatics. Formal grammatic is a list of rules which are used to check
   whether input is written in a language or not.
 
   \item \textbf{Interpreter}
   
   RPQR does not need to translate query into some other form, it needs to perform it. That is the
-  reason why last part of RPQR language would be its interpreter. Interpreter inside of RPQR would need to be
-  flexible enough for it to be able to accept new commands for searching of packages. Another thing
-  that is important is using optimizations such as short evaluation to make searching of packages
+  reason why the last part of RPQR language would be its interpreter. The interpreter inside of RPQR would need to be
+  flexible enough for it to be able to accept new commands for searching for packages. Another thing
+  that is important is using optimizations such as short evaluation to make searching for packages
   as fast as possible.
 \end{itemize}
 
@@ -348,57 +348,57 @@ Components that are needed for interpretation of RPQR language:
 Since one of the most time consuming actions of current approach to queries about RPM packages is
 network communication and transfer of metadata, it is crucial to download all metadata at once on
 the start of execution to not need any further downloads. This can be ensured through DNF API by
-executing query to list all packages that are available to install from specified repositories.
-DNF package manager uses very similar approach by downloading all metadata to local storage and
-updating it only when user forces it to or cache expires.
+executing a query to list all packages that are available to install from specified repositories.
+DNF package manager uses a very similar approach by downloading all metadata to local storage and
+updating it only when the user forces it to or the cache expires.
 
-Question of metadata expiration needs to be handled by RPQR itself too.
+The question of metadata expiration needs to be handled by RPQR itself too.
 
-Approach when metadata are not updated unless user wants to do so could save time for
-checking of repository but user would be responsible for consistency of metadata and repository
-state which could prove problematic.
+Approach, when metadata is not updated unless the user wants to do so, could save time for
+checking of the repository but the user would be responsible for the consistency of metadata and repository
+state, which could prove problematic.
 
 RPQR could stick with the same approach as the DNF one. Rebuild metadata when they expire.
-The problem is that building internal structure and rebuilding cache could be very time consuming
-operation maybe even in the matter of minutes.
+The problem is that building internal structure and rebuilding cache could be a very time consuming
+operation, maybe even in a matter of minutes.
 
-The third and maybe the most proper approach is to set expiration time of metadata to some
+The third and maybe the most proper approach is to set the expiration time of metadata to some
 longer period of time. After such period the time for rebuilding of cache will not be so important.
-Also if no change occured then it is pointless to rebuild the data and it would be highly useful
+Also if no change occurred then it is pointless to rebuild the data and it would be highly useful
 to rebuild only parts of internal data structures which do not longer correspond with the actual state
 of RPM repositories supplied in configuration.
 
 \section{Configuration}
 It is clear that the RPQR tool will need multiple options for it to work properly and accordingly to
-users notions. There are multiple ways how to supply such configuration to the tool. One of the
-most common ones is to supply configuration by command line options. While this is easy to implement
+users' notions. There are multiple ways how to supply such configuration to the tool. One of the
+most common ones is to supply configuration by command-line options. While this is easy to implement
 and Python offers native support for it, this approach could prove to be painful for user when
-overused. For example six or more commandline options would be difficult to track. That can be solved
-by providing user with means to set mostly static options through configuration file.
+overused. For example, six or more command-line options would be difficult to track. That can be solved
+by providing the user with the means to set mostly static options through the configuration file.
 
-With configuration file withstands more choices which needs to be done.
+With configuration file withstands more choices.
 \begin{itemize}
   \item Format of the configuration file
-        There are multiple formats which can be used. JSON or YAML are probably the most appropriate ones.
+        There are multiple formats that can be used. JSON or YAML is probably the most appropriate ones.
         Their description was stated in previous sections.
   \item What options should configuration include
-        Configuration should include only options which does not change often and thus do not force
-        user to change the file frequently.
+        Configuration should include only options which do not change often and thus do not force
+        the user to change the file frequently.
 \end{itemize}
 
 \chapter{Research}
-With good knowledge about current state of utilities and technologies, this chapter can explore
-what is the best approach to resolving complex queries about RPM packages. In each section
-there is described particular approach that was choosen as a best for solution of individual problem.
+With good knowledge about the current state of utilities and technologies, this chapter can explore
+the best approach to resolving complex queries about RPM packages. In each section,
+there is described a particular approach that was chosen as a best solution of an individual problem.
 
 \section{Project structure}
-Python project is most often divided into folders which contain logically related classes
-and classes that have less dependencies are located deeper in a directory structure. So entire
-implementation of projects logic has one root folder. Another folder is meant for executble
-binaries or scripts that are supposed to be installed in path of users system. The last important
-folder is folder containing tests. There is multiple ways to store projects test but own folder
-seems to be most clean and tests seeking utilities have easier time to find tests organized in
-such way.
+Python project is most often divided into folders that contain logically related classes.
+Classes that have fewer dependencies are located deeper in a directory structure. So entire
+implementation of the projects logic has one root folder. Another folder is meant for executable
+binaries or scripts that are supposed to be installed in the path of the users system. The last important
+folder is the folder containing tests. There are multiple ways to store projects' test but own folder
+seems to be the most clean and tests seeking utilities have an easier time finding tests organized in
+like that.
 
 Illustration of proposed structure:
 
@@ -414,8 +414,8 @@ test/example_module
 \newpage
 
 \section{Retrieval of information from repository}
-While there are approaches which would allow individual retrieval of metadata from repositories,
-such as custom downloading of xmls and database archives, there is no reason for that, because
+While there are approaches that would allow individual retrieval of metadata from repositories,
+such as custom downloading of XMLs and database archives, there is no reason for that, because
 DNF provides API that allows application to use its already implemented downloading of metadata.
 The best way to use it for this purpose is to create query which matches with every package
 accessible through configured repositories.
@@ -1517,6 +1517,12 @@ After that, the only other required thing is instance of \textit{RPQRQuery} clas
 possible to create perform queries. Results are returned as a \textit{networkx} graph and has to be
 worked with as. This script walks through orphaned packages and finds other maintainers affected by
 their orphanation. 
+
+\section{Evaluation}
+
+RPQR projects usefullnes was evaluated with the \textit{RPQROrphaned} script mentioned earlier in
+the API documentation. Previous solution needed tens of minutes to create list of orphaned packages
+and maintainers that are affected, RPQROrphaned script needs one minute on system with casual processor.
 
 \chapter{Conclusion}
 
