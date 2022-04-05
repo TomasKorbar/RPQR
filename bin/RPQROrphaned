@@ -30,14 +30,12 @@ if __name__ == "__main__":
                                [("fedora-repo", "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/x86_64/os/"),
                                 ("source-repo", "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/source/tree/")],
                                 {"RPQRMaintainerPlugin":{"url": "https://src.fedoraproject.org/extras/pagure_owner_alias.json"}})
-    loader = RPQRLoader(config)
-    # parse information about packages
-    graph = loader.createDatabase()
-    result = RPQRQuery.performQuery("MAINTAINER('orphan')", graph, config)
+    query = RPQRQuery(config)
+    result = RPQRQuery.performQuery("MAINTAINER('orphan')")
     for node in list(result.nodes):
         # now we will recursively gather packages which depend on every orphaned package
         dependentPackages = RPQRQuery.performQuery(
-            "WHATDEPENDSON('%s', 20)" % graph.nodes[node]["name"], graph, config)
+            "WHATDEPENDSON('%s', 20)" % result.nodes[node]["name"])
         # get maintainers affected by this change
         maintainerList = []
         for pkgId in list(dependentPackages.nodes):
@@ -47,7 +45,7 @@ if __name__ == "__main__":
         maintainerList = list(dict.fromkeys(maintainerList))
         # orphan is just a placeholder so remove it
         maintainerList.remove('orphan')
-        print("%s => " % graph.nodes[node]["name"], end="")
+        print("%s => " % dependentPackages.nodes[node]["name"], end="")
         for maintainer in maintainerList:
             print("%s " % maintainer, end="")
         print()
