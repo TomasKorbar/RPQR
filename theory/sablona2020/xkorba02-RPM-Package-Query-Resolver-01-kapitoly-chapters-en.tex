@@ -1121,7 +1121,11 @@ section with prefix \textit{RPQRRepo\_} and member url which specifies base URL 
 The third section is required for \textit{RPQRMaintainerPlugin}. Each plugin can have its own section
 of configuration and member disabled, which when set to \textit{1} will prevent this plugin from
 working. Plugin configuration is described by plugins individually and is mentioned here only for
-clarification of example. 
+clarification of example.
+
+\textbf{Example of use}
+
+RPQR "ONWHATDEPENDS('libyang-1.0.225-1.fc34.x86\_64', 1)" --filterattributes "name" --filterrelations "depends" --visualize
 
 \textbf{RPQR language}
 
@@ -1292,7 +1296,227 @@ under the GPL along with build \& install instructions.
 
 \section{API documentation and example of scripting}
 
+RPQR project allows developers to create their own plugins which can further extend its ability to
+recognize attributes and relations between packages. This section will show already existing plugins
+on which it will describe plugin development and importance of individual parts.
 
+\subsection*{RPQRMaintainerPlugin}
+
+\begin{lstlisting}
+  class RPQRMaintainerPlugin(RPQRDataPlugin):
+    """ Plugin allowing us to store information about package maintainers
+        and ask Queries about them
+    """
+\end{lstlisting}
+
+Plugin which wants to add new attribute to packages needs to inherit from RPQRDataPlugin class.
+Please pay attention to file name of your python module. The file name has to be the same as
+name of the class.
+
+\begin{lstlisting}
+    desiredName = "maintainer"
+
+    implementedCommands = [MaintainerFilter, DependsOnUserFilter]
+\end{lstlisting}
+
+\textit{desiredName} is a name of the attribute that this plugin wants to add. \textit{implementedCommands}
+is a list of classes of commands that this plugin wants to add to RPQR project. Commands will be described
+later.
+
+\begin{lstlisting}
+    packageToMaintainer = None
+
+    def __init__(self, rootLogger: Logger = None, config: dict = None):
+        self.listUrl = None
+        if config == None and rootLogger != None:
+            lgr = rootLogger.getChild("RPQRDataPlugin")
+            lgr.warning("url for retrieval of maintainers was not supplied")
+            return
+
+        self.logger = rootLogger.getChild(
+            "RPQRDataPlugin") if rootLogger != None else None
+
+        self.listUrl = config.get("url")
+\end{lstlisting}
+
+\textit{packageToMaintainer} is a helper class variable. Plugin can declare its variables as it sees
+fit. Plugin needs to be ready for usecases when it does not has access to logger or configuration
+and has to act accordingly. Because \textit{RPQRMaintainerPlugin} needs to know url for retrieval
+of maintainer list, it has to access configuration. All such usecases have to be documented.
+
+\newpage
+
+\begin{lstlisting}
+    def _downloadJson(self):
+        if self.listUrl == None:
+            return {}
+        receivedResponse = requests.get(self.listUrl)
+
+        if receivedResponse.status_code != 200:
+            self.logger.error(
+                "RPQR was unable to retrieve maintainer list from supplied url %s" % self.listUrl)
+
+        return receivedResponse.json().get("rpms", {})
+\end{lstlisting}
+
+This is a helper method for retrieval of maintainer list. Plugins can access any source of information
+that they want but this also has to be documented.
+
+\begin{lstlisting}
+    def prepareData(self, pkg: hawkey.Package) -> List[str]:
+        """Get maintainers of package
+
+        :param pkg: hawkey package information
+        :type pkg: hawkey.Package
+        :return: list of maintainers
+        :rtype: List[str]
+        """
+        # download package maintainer list and build dictionary from it
+        if RPQRMaintainerPlugin.packageToMaintainer is None:
+            RPQRMaintainerPlugin.packageToMaintainer = {}
+            data = self._downloadJson()
+            data: dict
+            for name, value in data.items():
+                RPQRMaintainerPlugin.packageToMaintainer[name] = value
+        # owner alias json uses source names as keys
+        return RPQRMaintainerPlugin.packageToMaintainer[pkg.name if pkg.source_name == None else pkg.source_name]
+\end{lstlisting}
+
+\textit{prepareData} is called for each individual package and has to return value which should be
+saved to the implemented attribute. If block is there, because first run of this method will retrieve
+list of maintainers and create helper dictionary to accelerate loading. Please use such approaches
+to keep the project fast. After such initialization, for every package is just returned list of maintainers
+from \textit{packageToMaintainer} dictionary. The ternary operator is there, because source packages
+have different naming conventions in dnf API than the binary ones and RPQR has to be ready for both.
+
+\newpage
+
+\subsection*{DependsOnUserFilter}
+
+\begin{lstlisting}
+  class DependsOnUserFilter(RPQRFilteringCommand):
+    """Command allowing filtering packages which depend on certain maintainer.
+    That means the person is either maintaining them or package depends on
+    package which they maintain recursively.
+    """
+    args = [str, int]
+    name = "DEPENDSONUSER"
+
+    def execute(graph: networkx.MultiDiGraph, args: list) -> List[int]:
+        """ Get list of ids of packages which depend on user specified in args[0]
+        to max depth args[1]
+
+        :param graph: built graph of packages
+        :type graph: MultiDiGraph
+        :param args: arguments supplied to command
+        :type args: list
+        :return: node ids of packages which depend on specified maintainer
+        :rtype: List[int]
+        """
+        targetUser = args[0]
+        depth = int(args[1])
+        nodes = [a for a in list(graph.nodes)
+                 if targetUser in graph.nodes[a]["maintainer"]]
+
+        return RPQRFilteringCommand._BFS(graph, nodes, depth, "depends")
+\end{lstlisting}
+
+This is more complex command out of \textit{RPQRMaintainerPlugin}s two commands so it is more worthy of
+explanation. All commands have to inherit from \textit{RPQRFilteringCommand} class and declare \textit{args}
+array and \textit{name} class variable. \textit{args} is a array which tells RPQR project what arguments
+this command needs. Allowed types are str, int and list. Str means string literal, int means numeric
+literal and list is a result of substatement. List is handled as list on integers. \textit{name}
+is name of the command used to invocate it.
+
+All commands have to implement \textit{execute} method. \textit{execute} method receives built graph
+of packages and its arguments. As you can see, first command gathers ids of nodes which have specified
+maintainer in their maintainer list. Ids are then passed to static method \_BFS which is prepared
+implementation of Breadth First Search. Breadth First Search then finds dependent nodes to specified
+depth.
+
+\newpage
+
+\subsection*{RPQRDependencyPlugin}
+
+\begin{lstlisting}
+  class RPQRDependencyPlugin(RPQRRelationPlugin):
+    """Plugin for gathering dependencies of packages and allowing filtering
+    by them
+    """
+    desiredName = "depends"
+    implementedCommands = [OnWhatDependsFilter, WhatDepensOnFilter]
+
+    def __init__(self, rootLogger: Logger = None, config: dict = None) -> None:
+        self.optionalDataStructure = None
+
+    def prepareData(self, pkg: hawkey.Package, graph: MultiDiGraph, query: hawkey.Query) -> List[int]:
+        """ Get list of nodes to which we want to form this relation
+
+        :param pkg: hawkey package object. Holds information supplied by dnf api
+        :type pkg: hawkey.Package
+        :param graph: graph of packages
+        :type graph: MultiDiGraph
+        :param query: hawkey query object. Allows further queries through dnf api
+        :type query: hawkey.Query
+        :return: list of target nodes for this node
+        :rtype: List[int]
+        """
+        # we will use dictionary for optimalization of this process
+        if self.optionalDataStructure == None:
+            self.optionalDataStructure = {}
+            for (node, attribs) in graph.nodes.items():
+                self.optionalDataStructure[attribs["name"]] = node
+
+        edges = list()
+        requiredPackages = query.filter(provides=pkg.requires).run()
+        for dependency in requiredPackages:
+            target = self.optionalDataStructure[str(dependency)]
+            edges.append(target)
+        return edges
+\end{lstlisting}
+
+Relation plugins are very simmilar to those adding attributes with a few differences. Relation plugins
+are able to access graph of packages which they can access and hawkey query from DNF API. Relation
+plugins are returning list of target nodes of oriented edges that they are creating.
+
+\section{Use of RPQR API to perform queries}
+
+Working of RPQR API will be described on the \textit{RPQROrphaned} script which was used for testing
+of RPQR project.
+
+\begin{lstlisting}
+  if __name__ == "__main__":
+    # set up configuration
+    config = RPQRConfiguration([os.path.dirname(rpqr.loader.plugins.implementations.__file__)],
+                               [("fedora-repo", "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/x86_64/os/"),
+                                ("source-repo", "http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/33/Everything/source/tree/")],
+                                {"RPQRMaintainerPlugin":{"url": "https://src.fedoraproject.org/extras/pagure_owner_alias.json"}})
+    query = RPQRQuery(config)
+    result = query.performQuery("MAINTAINER('orphan')")
+    for node in list(result.nodes):
+        # now we will recursively gather packages which depend on every orphaned package
+        dependentPackages = query.performQuery(
+            "WHATDEPENDSON('%s', 20)" % result.nodes[node]["name"])
+        # get maintainers affected by this change
+        maintainerList = []
+        for pkgId in list(dependentPackages.nodes):
+            for maintainer in dependentPackages.nodes[pkgId]["maintainer"]:
+                if maintainer not in maintainerList:
+                    maintainerList.append(maintainer)
+        maintainerList = list(dict.fromkeys(maintainerList))
+        # orphan is just a placeholder so remove it
+        maintainerList.remove('orphan')
+        print("%s => " % dependentPackages.nodes[node]["name"], end="")
+        for maintainer in maintainerList:
+            print("%s " % maintainer, end="")
+        print()
+\end{lstlisting}
+
+Every use of the API needs to start with creating of an instance of \textit{RPQRConfiguration} class.
+After that, the only other required thing is instance of \textit{RPQRQuery} class and then it is
+possible to create perform queries. Results are returned as a \textit{networkx} graph and has to be
+worked with as. This script walks through orphaned packages and finds other maintainers affected by
+their orphanation. 
 
 \chapter{Conclusion}
 
