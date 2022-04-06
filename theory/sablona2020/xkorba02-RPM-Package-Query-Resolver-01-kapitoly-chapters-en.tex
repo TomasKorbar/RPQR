@@ -124,8 +124,8 @@ to handle all problems that withstand in modern RPM-based Linux distributions.
 \subsection*{DNF package manager}
 DNF package manager is a successor of the older YUM package manager \cite{DNFPackageManager}. It allows users to install and remove software
 on the system comfortably by handling all of the operations that are needed to retrieve package dependencies
-and resolve any possible conflicts. A very often used feature is also system upgrades, when
-DNF can migrate a system from old versions of distribution to new ones. A very important fact
+and resolve any possible conflicts. A~very often used feature is also system upgrades, when
+DNF can migrate a system from old versions of distribution to new ones. A~very important fact
 that needs to be stated is that DNF provides python API which can be used by other projects to retrieve metadata
 from repositories and distinguish them.
 
@@ -443,7 +443,7 @@ Naming conventions for files containing plugins:
   more rules
 \end{itemize}
 
-A plugin will contain one main class that can define how to retrieve data that it needs and commands
+A~plugin will contain one main class that can define how to retrieve data that it needs and commands
 that can be used to filter packages by this attribute or relationship. Enforcing good structure
 will be done by providing base classes that plugins need to extend.
 
@@ -1334,7 +1334,7 @@ later.
         self.listUrl = config.get("url")
 \end{lstlisting}
 
-\textit{packageToMaintainer} is a helper class variable. A plugin can declare its variables as it sees
+\textit{packageToMaintainer} is a helper class variable. A~plugin can declare its variables as it sees
 fit. The plugin needs to be ready for use-cases when it does not has access to logger or configuration
 and has to act accordingly. Because \textit{RPQRMaintainerPlugin} needs to know the URL for retrieval
 of the maintainer list, it has to access configuration. All such use cases have to be documented.
@@ -1420,7 +1420,7 @@ This is a more complex command out of \textit{RPQRMaintainerPlugin}s two command
 explanation. All commands have to inherit from \textit{RPQRFilteringCommand} class and declare \textit{args}
 array and \textit{name} class variable. \textit{args} is an array that tells the RPQR project what arguments
 this command needs. Allowed types are str, int and list. Str means string literal, int means numeric
-literal and list is a result of substatement. A list is handled as a list of integers. \textit{name}
+literal and list is a result of substatement. A~list is handled as a list of integers. \textit{name}
 is the name of the command used to invocate it.
 
 All commands have to implement \textit{execute} method. \textit{execute} method receives a built graph
@@ -1521,4 +1521,10 @@ and maintainers that are affected, RPQROrphaned script needs one minute on a sys
 
 \chapter{Conclusion}
 
-\blindtext
+The RPQR project proved that the problem with query resolution about various metadata of packages can
+be solved properly. The script that now performs tasks that were present in the past is faster than the
+previous solutions and the project is ready to adapt to various new tasks that can occur in the future.
+
+All initial goals of this thesis were fulfilled and the project is ready for further development because
+of well-documented code and set of tests that can always verify whether new changes did not create a
+regression.

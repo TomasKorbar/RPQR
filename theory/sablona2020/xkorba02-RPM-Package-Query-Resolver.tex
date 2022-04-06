@@ -98,10 +98,10 @@
   nastavení uživatele nebo poskytnutí výsledku v strojově zpracovatelném formátu.
   }, % abstrakt v českém či slovenském jazyce / abstract in czech or slovak language
   abstract.en={The goal of this thesis is to create a tool allowing effective retrieval of data about RPM packages
-  and perform queries both about their data and relations which exist between them. Tool has to be
-  able to outperform speed of currently existing tools and allow easy extension for preservation
-  of more data or relations. Another of required features is visualization of results according
-  to user settings or providing of results in machine readable format.
+  and perform queries both about their data and the relations which exist between them. The tool has to be
+  able to outperform the speed of currently existing tools and allow easy extension for the preservation
+  of more data or relations. Another required feature is a visualization of results according
+  to user settings or providing of results in machine-readable format.
   }, % abstrakt v anglickém jazyce / abstract in english
   %abstract.en={An abstract of the work in English will be written in this paragraph.},
   % Prohlášení (u anglicky psané práce anglicky, u slovensky psané práce slovensky) / Declaration (for thesis in english should be in english)
@@ -127,73 +127,73 @@
 }
 
 % Rozšířený abstrakt (cca 3 normostrany) - lze definovat zde nebo výše / Extended abstract (approximately 3 standard pages) - can be defined here or above
-\extendedabstract{RPM packages are basically compressed archives containing software and metadata about
-their contents. When user wants to install software with RPM package manager, dnf for example,
-dnf looks through its configured repositories and locates package which provides function that the
+\extendedabstract{RPM packages are compressed archives containing software and metadata about
+their contents. When a user wants to install software with RPM package manager, DNF for example,
+DNF looks through its configured repositories and locates package which provides a function that the
 user requires. RPM package in its metadata contains information about what package provides,
-for example library, and list of packages which are required on host system for software to be
+for example, library, and list of packages which are required on the host system for software to be
 working properly.
 
-As the distribution grows bigger and more complex, so does its RPM repositories and more
-maintenance is required to keep distribution in good state and useful to its users. This directly
-involves cooperation of developers which maintain particular pieces of distribution and their
+As the distribution grows bigger and more complex, so do its RPM repositories and more
+maintenance is required to keep distribution in a good state and useful to its users. This directly
+involves the cooperation of developers who maintain particular pieces of distribution and their
 ability to access information quickly.
 
-While the most important information as dependencies and lists of files can be accessed in matter
-of seconds through dnf alone, information which involves data that is not necessary for package
+While the most important information as dependencies and lists of files can be accessed in a matter
+of seconds through DNF alone, information that involves data that is not necessary for the package
 to be functional or is useful mainly to developers, often has to be searched for manually or
 through slow scripting. This fact leads us to the goal of this thesis and that is to invent a tool
 which will be able to quickly retrieve any data about packages, save this data in a cache and
 allow us to ask any question that we can think of.
 
-Example of this is a situation which frequently occurs during development and maintenance of
-every Fedora release. Fedora is maintained by community and thus it is no surprise when some of the
-members have no longer time to maintain packages owned by them. When this happens, maintainer
-has the ability to either pass the ownership to secondary maintainers or if there are none, orphan
-the package. Orphaned package is kept in official repositories for another 8 weeks and then is
-removed if no maintainer acquires it. Problem is that packages which depend on it, can not be
-installed. Normally maintainer of dependent package steps up and takes ownership of dependency but
-first he must know that such event occurred. Maintainers can be contacted but first we must know
-who should we contact. This is the moment when user has to individually query repositories
-about dependent packages and has to connect them with appropriate developers. Operation like
-this took tens of minutes with current state of dnf api and scripting. With proper caching and
+An example of this is a situation that frequently occurs during the development and maintenance of
+every Fedora release. Fedora is maintained by the community and thus it is no surprise when some of the
+members have no longer time to maintain packages owned by them. When this happens, the maintainer
+can either pass the ownership to secondary maintainers or if there are none, orphan
+the package. An orphaned package is kept in official repositories for another 8 weeks and then is
+removed if no maintainer acquires it. Problem is that packages that depend on it, can not be
+installed. Normally maintainer of the dependent package steps up and takes ownership of the dependency but
+first, he must know that such an event occurred. Maintainers can be contacted but first, we must know
+who should we contact. This is the moment when the user has to individually query repositories
+about dependent packages and has to connect them with appropriate developers. An operation like
+this took tens of minutes with the current state of DNF API and scripting. With proper caching and
 optimization, it could be possible to cut this time down to seconds.
 
-Another problem which this thesis is supposed to solve is resolving complicated queries. For example
-to assess how many frequently used packages will be affected by removal of some library. This
-requires that packages are connected with counts of their individual downloads and we choose
-only those packages that meet specified threshold. This way we can prioritize maintenance of
+Another problem that this thesis is supposed to solve is resolving complicated queries. For example
+to assess how many frequently used packages will be affected by the removal of some library. This
+requires that packages are connected with counts of their downloads and we choose
+only those packages that meet the specified threshold. This way we can prioritize the maintenance of
 heavily used libraries and fulfill the true requirements of distribution users.
 
-First of the greatest challenges of this project is to find an efficient data structure to store package
-data in such way that queries will be able to walk them quickly over and use algorithms which
-are able to quickly process relations. Another requirement is that this structure is well understandable
-and in best case serializable to file which we can later use as a cache. Cache should allow user
-to not retrieve and build structure every time the project is run but increase speed of query
-by avoiding this time consuming operation.
+The first of the greatest challenges of this project is to find an efficient data structure to store package
+data in such a way that queries will be able to walk them quickly over and use algorithms that
+can quickly process relations. Another requirement is that this structure is well understandable
+and in the best case serializable to a file that we can later use as a cache. The cache should allow the user
+to not retrieve and build structure every time the project is run but increase the speed of query
+by avoiding this time-consuming operation.
 
-Second is to choose how should the queries be specified.
+The second is to choose how should the queries be specified.
 It has to be complex enough to be able to express complicated queries but easy to learn and
-read, so users do not have to spend long time studying the tool before they can use it for something
-useful. In the same time it is very important to assert that the queries will be optimized in
+read, so users do not have to spend a long time studying the tool before they can use it for something
+useful. At the same time, it is very important to assert that the queries will be optimized in
 such a way that there will not be any unnecessary evaluations to accelerate the whole execution
 process.
 
-Foundations on which any real life usable tool stands is an accurate documentation. The project has
+Foundations on which any real-life usable tool stands is accurate documentation. The project has
 to be properly documented so users can find every information they need and are not slowed down by
 asking developers or studying how the project behaves in different situations.
 
-Last but not least requirement is the need for tool to be properly tested. Combination of unit and
+Last but not least requirement is the need for the tool to be properly tested. Combination of unit and
 functional testing will be needed to ensure projects stability and to make long time maintenance
-easy. Developer has a lot choices when it comes to choosing testing technology but since language
-of project is Python it is only fitting that verified framework with great community
+easy. The developer has a lot of choices when it comes to choosing testing technology but since language
+of the project is Python it is only fitting that verified framework with a great community
 such as Pytest is used.
 
-Project has a real life use case scenarios which came up during
-maintenance of packages in Fedora and RHEL distributions which will allow author and lead to
-identify whether it has fulfilled its purpose or not. To solve all these problems is the final goal
-of this thesis which is meant to prove that creation of such powerful tool is possible and it can
-accelerate work of package maintainers while making the dependent distribution more stable and secure.
+The project has a real-life use case scenario which came up during
+maintenance of packages in Fedora and RHEL distributions which will allow the author and lead to
+identify whether it has fulfilled its purpose or not. Solve all these problems is the final goal
+of this thesis which is meant to prove that the creation of such a powerful tool is possible and it can
+accelerate the work of package maintainers while making the dependent distribution more stable and secure.
 }
 % Začít rozšířený abstrakt na liché stránce? / Should extended abstract start on the odd page?
 %\extabstractodd{true}
