@@ -132,7 +132,7 @@ from repositories and distinguish them.
 DNF is the only tool that is currently able to query repositories for metadata that are specified
 in packages. An example of a frequently used query is:
 
-\textit{\$ dnf repoquery --whatprovides /usr/bin/bash}
+\textit{\$ dnf repoquery -{}-whatprovides /usr/bin/bash}
 
 This command issues that DNF should execute command \textit{repoquery} filtering by tag \mbox{\textit{provides}}
 and find all packages that provide file \textit{/usr/bin/bash}. DNF can search for packages based on
@@ -893,13 +893,12 @@ while True:
                   commandRule = rule
           childList = [curInput]
           for indexMember, member in enumerate(commandRule[1:]):
-              # if command requires substatement, then cut its tokens
-              # and put it into queue
               if member == self.nonTerminalTypes["statement"]:
                 ...
               if argToken.type != member:
                 ...
-              if argToken.type in [self.config.tokenTypes["number"], self.config.tokenTypes["string"]]:
+              if (argToken.type in
+                [self.config.tokenTypes["number"], self.config.tokenTypes["string"]]):
                   childList.append(argToken)
           newStatement = RPQRStackSymbol(
               self.nonTerminalTypes["statement"], childList)
@@ -1005,16 +1004,13 @@ control for example when a cache file should be invalidated and overwritten.
 \begin{lstlisting}
   rpqrcfg = RPQRConfiguration(pluginDirectories, namexrepository, cfgParser)
   loader = RPQRLoader(rpqrcfg)
-
   graph = loader.createDatabase(cacheFile, args.clearcache)
   # we will not be performing empty query
   if len(args.query) == 0:
       sys.exit(0)
   result = RPQRQuery.performQuery(args.query, graph, rpqrcfg)
-
   if result is None:
       sys.exit(1)
-
   # we will filter result attributes according to supplied parameters
   if len(args.filterattributes) != 0 or len(args.filterrelations) != 0:
       ...
@@ -1028,8 +1024,8 @@ control for example when a cache file should be invalidated and overwritten.
               for u, v, edge_key in graph.out_edges([node], keys=True):
                   if not edge_key in args.filterrelations.split(";"):
                       graph.remove_edge(u, v, key=edge_key)
-
-  # if result should not be visualized then just print it in JSON format to stdout
+  # if result should not be visualized then just print it
+  # in JSON format to stdout
   if not args.visualize:
       print(json.dumps(json_graph.node_link_data(
           result), indent=4, sort_keys=True))
@@ -1060,8 +1056,8 @@ RPQR - RPM package query resolver
 
 \textbf{SYNOPSIS}
 
-RPQR [-h] [--cfgpath CFGPATH] [--filterattributes FILTERATTRIBUTES] [--filterrelations FILTERRELATIONS]
-[--visualize] [--clearcache]
+RPQR [-h] [-{}-cfgpath CFGPATH] [-{}-filterattributes FILTERATTRIBUTES] [-{}-filterrelations FILTERRELATIONS]
+[-{}-visualize] [-{}-clearcache]
 query
 
 \textbf{DESCRIPTION}
@@ -1073,17 +1069,17 @@ them. Utility is configurable through configuration file which is located by def
 \textbf{OPTIONS}
 
 \begin{itemize}
-  \item -h, --help
+  \item -h, -{}-help
     \subitem Show help message and exit
-  \item --cfgpath CFGPATH
+  \item -{}-cfgpath CFGPATH
     \subitem Path to configuration file
-  \item --filterattributes FILTERATTRIBUTES
+  \item -{}-filterattributes FILTERATTRIBUTES
     \subitem Specify list of attributes which interest you in the result. If left empty, then all attributes will be present in result
-  \item --filterrelations FILTERRELATIONS
+  \item -{}-filterrelations FILTERRELATIONS
     \subitem Specify list of relations which interest you in the result. If left empty, then all relations will be present in result
-  \item --visualize
+  \item -{}-visualize
     \subitem Visualize result
-  \item --clearcache
+  \item -{}-clearcache
     \subitem Clear cache
 \end{itemize}
 
@@ -1120,7 +1116,7 @@ the clarification of examples.
 
 \textbf{Example of use}
 
-RPQR "ONWHATDEPENDS('libyang-1.0.225-1.fc34.x86\_64', 1)" --filterattributes "name" --filterrelations "depends" --visualize
+RPQR "ONWHATDEPENDS('libyang-1.0.225-1.fc34.x86\_64', 1)" -{}-filterattributes "name" -{}-filterrelations "depends" -{}-visualize
 
 \textbf{RPQR language}
 
@@ -1135,8 +1131,6 @@ of operators to create an appropriate combination of commands to get the results
   \item  \textasciitilde - package must not conform to statement located on the right 
 \end{itemize}
 
-\newpage
-
 \textbf{Parenthesis}
 
 RPQR also supports parenthesis to provide further means to set the priority of statements that are specified.
@@ -1147,6 +1141,8 @@ statement is \textbf{Find packages that conform to statement1 and at the same ti
 statement2 or statement3}. On the other hand, the second statement meaning is: \textbf{Find packages
 that conform to both statement1 and statement2 but if the package conforms to statement3 then it does not
 have to conform either to statement1 or statement2}
+
+\newpage
 
 \textbf{Official distributed plugins documentation}
 
