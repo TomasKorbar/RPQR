@@ -1056,9 +1056,8 @@ RPQR - RPM package query resolver
 
 \textbf{SYNOPSIS}
 
-RPQR [-h] [-{}-cfgpath CFGPATH] [-{}-filterattributes FILTERATTRIBUTES] [-{}-filterrelations FILTERRELATIONS]
-[-{}-visualize] [-{}-clearcache]
-query
+RPQR [-h] [-{}-cfgpath <CFGPATH>] [-{}-filterattributes <FILTERATTRIBUTES>] \newline
+[-{}-filterrelations <FILTERRELATIONS>] [-{}-visualize] [-{}-clearcache] <QUERY>
 
 \textbf{DESCRIPTION}
 
@@ -1071,11 +1070,11 @@ them. Utility is configurable through configuration file which is located by def
 \begin{itemize}
   \item -h, -{}-help
     \subitem Show help message and exit
-  \item -{}-cfgpath CFGPATH
+  \item -{}-cfgpath <CFGPATH>
     \subitem Path to configuration file
-  \item -{}-filterattributes FILTERATTRIBUTES
+  \item -{}-filterattributes <FILTERATTRIBUTES>
     \subitem Specify list of attributes which interest you in the result. If left empty, then all attributes will be present in result
-  \item -{}-filterrelations FILTERRELATIONS
+  \item -{}-filterrelations <FILTERRELATIONS>
     \subitem Specify list of relations which interest you in the result. If left empty, then all relations will be present in result
   \item -{}-visualize
     \subitem Visualize result
@@ -1123,6 +1122,8 @@ RPQR "ONWHATDEPENDS('libyang-1.0.225-1.fc34.x86\_64', 1)" -{}-filterattributes "
 RPQR language serves as a means to specify what packages the user wants to see in the result. Take advantage
 of operators to create an appropriate combination of commands to get the results that you want.
 
+\newpage
+
 \textbf{Operators}
 
 \begin{itemize}
@@ -1137,10 +1138,10 @@ RPQR also supports parenthesis to provide further means to set the priority of s
 Use parenthesis to make your query more readable and to make sure that the result is what you expect.
 \textit{statement1 \& (statement2 | statement3)} This statement is not equal to the version without
 parenthesis specified like this \textit{statement1 \& statement2 | statement3}. The semantic of the first
-statement is \textbf{Find packages that conform to statement1 and at the same time conform to either
+statement is: \textbf{Find packages that conform to statement1 and at the same time conform to either
 statement2 or statement3}. On the other hand, the second statement meaning is: \textbf{Find packages
 that conform to both statement1 and statement2 but if the package conforms to statement3 then it does not
-have to conform either to statement1 or statement2}
+have to conform either to statement1 or statement2}.
 
 \newpage
 
@@ -1513,7 +1514,26 @@ their orphaning.
 
 RPQR projects' usefulness was evaluated with the \textit{RPQROrphaned} script mentioned earlier in
 the API documentation. The previous solution needed tens of minutes to create a list of orphaned packages
-and maintainers that are affected, RPQROrphaned script needs one minute on a system with a casual processor.
+and maintainers that are affected, \textit{RPQROrphaned} script needs one minute on a system with a casual processor.
+
+There are results measured with the Linux time command when \textit{RPQROrphaned} is compared with \textit{find\_unblocked\_orphans.py}\cite{orphans}
+script developed for the same purpose by Miroslav Hroncok with previously accessible technologies.
+
+\textbf{find\_unblocked\_orphans.py}
+
+\begin{lstlisting}
+real  12m32.938s
+user  2m37.206s
+sys 0m2.847s  
+\end{lstlisting}
+
+\textbf{RPQROrphaned}
+
+\begin{lstlisting}
+real  0m30.988s
+user  0m25.159s
+sys 0m0.910s
+\end{lstlisting}
 
 \chapter{Conclusion}
 
@@ -1524,3 +1544,17 @@ previous solutions and the project is ready to adapt to various new tasks that c
 All initial goals of this thesis were fulfilled and the project is ready for further development because
 of well-documented code and set of tests that can always verify whether new changes did not create a
 regression.
+
+\chapter{Acronyms}
+
+Since there are many used acronyms in this thesis, it is appropriate to list them and explain them
+for better understanding.
+
+\begin{itemize}
+  \item API - Application Programming Interface - interface for use of different project
+  \item DNF - Dandified YUM - Successor of the YUM package manager
+  \item RPM - Red Hat Package Manager - Low-level RPM package manager 
+  \item RPQR - RPM Package Query Resolver - Project created during this thesis
+  \item YUM - The Yellowdog Updater, Modified - High-level RPM package manager
+  \item GPL - General Public License - Open source license
+\end{itemize}

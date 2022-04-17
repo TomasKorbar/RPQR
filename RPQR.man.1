@@ -1,0 +1,242 @@
+.TH RPQR "1" "April 2022" "RPQR" "User Commands"
+.SH NAME
+RPQR \- RPM package query resolver
+.SH DESCRIPTION
+RPQR utility is supposed to make querying RPM repositories about package metadata
+easy by providing the user with the means to filter them by such metadata and individual
+types of relations that occur between them. Utility is configurable through configuration
+file which is located by default in /etc/rpqr.conf.
+.br
+RPM package query resolver
+.SH SYNOPSIS
+.PP
+RPQR [\-h] [\-\-cfgpath <CFGPATH>] [\-\-filterattributes <FILTERATTRIBUTES>]
+[\-\-filterrelations <FILTERRELATIONS>] [\-\-visualize] [\-\-clearcache] <QUERY>
+.SH OPTIONS
+.TP
+\-h, \-\-help
+Show help message and exit
+.TP
+\-\-cfgpath <CFGPATH>
+Path to configuration file
+.TP
+\-\-filterattributes <FILTERATTRIBUTES>
+Specify list of attributes which interest you in the result. If left empty, then all attributes will be present in result
+.TP
+\-\-filterrelations <FILTERRELATIONS>
+Specify list of relations which interest you in the result. If left empty, then all relations will be present in result
+.TP
+\-\-visualize
+Visualize result
+.TP
+\-\-clearcache
+Clear cache
+.SH "CONFIGURATION FILE"
+
+The following configuration file should illustrate general principles of how the RPQR utility behavior
+can be changed with it.
+
+[RPQR]
+.br
+pluginDirectories=["./rpqr/loader/plugins/implementations"]
+.br
+cache=/var/tmp/rpqr.json
+.br
+[RPQRRepo_f34-repo]
+.br
+url=http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/34/Everything/x86_64/os/
+.br
+[RPQRMaintainerPlugin]
+.br
+url=https://src.fedoraproject.org/extras/pagure_owner_alias.json
+
+The first section named RPQR is the main configuration section that contains the most
+important setting. pluginDirectories is an array of directories that contain python modules
+with RPQR plugins. cache is the path to the cache file, when this path is not supplied then
+RPQR utility will not use cache.
+
+The second section named RPQRRepo_f34-repo is meant to set up the repository that
+which user wants to query. There can be one to n number of repositories and they all have
+to be configured in their section with prefix RPQRRepo_ and member URL which specifies
+the base URL of the repository.
+
+The third section is required for RPQRMaintainerPlugin. Each plugin can have its section
+of configuration and member disabled, which when set to 1 will prevent this plugin from
+working. Plugin configuration is de
+
+.SH "EXAMPLE OF USE"
+RPQR "ONWHATDEPENDS('libyang-1.0.225-1.fc34.x86_64', 1)" --filterattributes "name"
+.br
+--filterrelations "depends" --visualize
+
+.SH "RPQR LANGUAGE"
+
+RPQR language serves as a means to specify what packages the user wants to see in the
+result. Take advantage of operators to create an appropriate combination of commands to
+get the results that you want.
+
+\fBOperators\fR
+
+.TP
+&
+package has to conform to both right and left statements
+.TP
+|
+package has to conform to either left or right statements
+.TP
+~
+package must not conform to statement located on the right
+
+.PP
+\fBParenthesis\fR
+
+RPQR also supports parenthesis to provide further means to set the priority of statements
+that are specified. Use parenthesis to make your query more readable and to make sure
+that the result is what you expect. \fBstatement1 & (statement2 | statement3)\fR This statement
+is not equal to the version without parenthesis specified like this \fBstatement1 & statement2
+| statement3\fR. The semantic of the first statement is: Find packages that conform to
+statement1 and at the same time conform to either statement2 or statement3.
+On the other hand, the second statement meaning is: Find packages that conform to
+both statement1 and statement2 but if the package conforms to statement3
+then it does not have to conform either to statement1 or statement2.
+
+.SH "OFFICIAL DISTRIBUTED PLUGIN DOCUMENTATION"
+
+This section of the manual contains documentation about the behavior of plugins that are
+officially distributed with the RPQR tool and supported by the maintainers.
+
+\fBRPQRNamePlugin\fR
+
+RPQRNamePlugin is one of the most important plugins for RPQR utility. It gathers the
+complete name of the package, meaning its name, version, release, and architecture. It is
+an attribute plugin and inserts attribute name into the package.
+
+Added attribute: ’name’
+
+Added commands: ’NAME’, ’NAMELIKE’, ’SUBSETNAMELIKE’
+
+Depends on plugins: None
+
+\fBCommands provided by RPQRNamePlugin\fR
+
+\fBNAME\fR
+
+Required arguments: name (string literal)
+
+NAME command filters out only package that has the same name attribute as was specified
+with the name argument.
+
+Example of use: NAME(’libyang-1.0.225-1.fc34.x86_64’)
+
+\fBNAMELIKE\fR
+
+Required arguments: name (string literal)
+
+NAMELIKE command filters out packages that contain substring specified with the argument name.
+
+Example of use: NAMELIKE(’libyang’)
+
+\fBSUBSETNAMELIKE\fR
+
+Required arguments: name (string literal), statement (RPQRLanguage statement)
+
+SUBSETNAMELIKE command filters out packages returned by argument statement that
+contain substring specified with the argument name.
+
+Example of use: SUBSETNAMELIKE(’x86_64’, NAMELIKE(’libyang’))
+
+Explanation of the example semantics: This query returns packages that contain libyang in
+their name and at the same time x86_64 substring. The difference between this statement
+and NAMELIKE(’x86_64’) & NAMELIKE(’libyang’) is that the first query will be faster because
+it has to go through an only subset of packages.
+
+\fBRPQRDependencyPlugin\fR
+
+RPQRDependencyPlugin is a relation plugin that gathers information about package de-
+pendencies and creates dependency relations between nodes that represent them in the
+RPQR graph of packages.
+
+Added relation: ’depends’
+
+Added commands: ’ONWHATDEPENDS’, ’WHATDEPENDSON’
+
+Depends on plugins: RPQRNamePlugin
+
+\fBCommands provided by RPQRDependencyPlugin\fR
+
+\fBONWHATDEPENDS\fR
+
+Required arguments: name (string literal), depth (numeric literal)
+
+ONWHATDEPENDS command filters out packages on which package, with name attribute
+matching name argument, depends. depth argument is controlling the depth to which
+RPQR should go when gathering dependencies from the graph. Depth zero means that
+only the package specified by name will be present in the output, value one causes that
+only direct dependencies will be present, and so on.
+
+Example of use: ONWHATDEPENDS(’libyang-1.0.225-1.fc34.x86_64’, 1)
+
+\fBWHATDEPENDSON\fR
+
+Required arguments: name (string literal), depth (numeric literal)
+
+WHATDEPENDSON command filters out packages that depend on the package, with
+name attribute matching name argument. depth argument is controlling the depth to
+which RPQR should go when gathering dependent packages from the graph. Depth zero
+means that only the package specified by name will be present in the output, value one
+causes that only directly dependent packages will be present, and so on.
+
+Example of use: WHATDEPENDSON(’libyang-1.0.225-1.fc34.x86_64’, 1)
+
+\fBRPQRMaintainerPlugin\fR
+
+RPQRMaintainerPlugin is an attribute plugin that gathers information about maintainers
+who work on packages. It inserts attribute maintainer into packages. Plugin, unfortunately,
+depends on the format of the list of maintainers which has to be in JSON.
+
+Added attribute: ’maintainer’
+
+Added commands: ’MAINTAINER’, ’DEPENDSONUSER’
+
+Depends on plugins: RPQRNamePlugin
+
+\fBCommands provided by RPQRMaintainerPlugin\fR
+
+\fBMAINTAINER\fR
+
+Required arguments: maintainers name (string literal)
+
+MAINTAINER command filters out packages that have a maintainer specified with the
+argument maintainers name in the list of their maintainers.
+
+Example of use: MAINTAINER(’tkorbar’)
+
+\fBDEPENDSONUSER\fR
+
+Required arguments: maintainers name (string literal), depth (numeric literal)
+
+DEPENDSONUSER command filters out packages that depend on the work of the maintainer specified with
+argument maintainers name. That means that depth zero will retrieve
+packages that have specified maintainer in the list of its maintainers as MAINTAINER command would.
+Values higher than zero will retrieve packages that depend on those retrieved
+with depth zero.
+
+Example of use: DEPENDSONUSER(’tkorbar’, 1)
+
+\fBRPQRMaintainerPlugin configuration\fR
+
+RPQRMaintainerPlugin has one additional variable for configuration not included in the
+default setting for all plugins. It is a variable URL that specifies the location of the maintainer
+list.
+
+Example:
+
+[RPQRMaintainerPlugin]
+.br
+url=https://src.fedoraproject.org/extras/pagure_owner_alias.json
+
+.SH LICENSE
+
+You may copy, distribute and modify the software as long as you track changes/dates in
+source files. Any modifications to or software including (via compiler) GPL-licensed code
+must also be made available under the GPL along with build & install instructions.
