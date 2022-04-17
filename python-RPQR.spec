@@ -38,6 +38,8 @@ Summary:        %{summary}
 sed -i "s;\\./rpqr/loader/plugins/implementations;%{python3_sitelib}/rpqr/loader/plugins/implementations;g" example.conf
 mkdir -m 0755 -p %{buildroot}/%{_sysconfdir}
 install -m 0644 -vp example.conf            %{buildroot}/%{_sysconfdir}/rpqr.conf
+mkdir -m 0755 -p %{buildroot}/%{_mandir}/man1/
+install -m 0644 -vp RPQR.1                  %{buildroot}/%{_mandir}/man1/
 %pyproject_install
 
 %check
@@ -45,6 +47,7 @@ true
 
 %files -n python3-RPQR
 %license LICENSE
+/%{_mandir}/man1/RPQR.1.*
 %{python3_sitelib}/rpqr
 %{python3_sitelib}/rpqr-%{version}.dist-info
 %{_bindir}/RPQR

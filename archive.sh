@@ -4,6 +4,7 @@ cp -r bin RPQR
 cp    LICENSE RPQR
 cp    example.conf RPQR
 cp    setup.py     RPQR
+cp    RPQR.1       RPQR
 tar -czvf RPQR.tgz RPQR
 rm -rf ./RPQR
 fedpkg --release f34 srpm
