@@ -9,7 +9,7 @@ Source0:        RPQR.tgz
 
 BuildArch:      noarch
 Requires:       python3 python3-dnf
-BuildRequires:  python3-devel sed python3-wheel
+BuildRequires:  python3-devel sed python3-wheel pip python3-setuptools
 
 %global _description %{expand:
 RPQR is an originally proposed tool which is supposed to make maintainers life easier by
