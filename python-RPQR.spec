@@ -1,5 +1,5 @@
 Name:           python-RPQR
-Version:        1.0.0
+Version:        1.0.1
 Release:        1%{?dist}
 Summary:        RPM Package Query Resolver
 
@@ -56,5 +56,8 @@ true
 %ghost /var/tmp/rpqr.json
 
 %changelog
+* Tue Apr 19 2022 Tomas Korbar <tkorbar@redhat.com> - 1.0.1-1
+- Rebase to version 1.0.1
+
 * Thu Mar 10 2022 Tomas Korbar <tkorbar@redhat.com> - 1.0.0-1
 - Initial package
