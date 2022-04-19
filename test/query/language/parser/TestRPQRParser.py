@@ -26,7 +26,7 @@ class TestRPQRParser(unittest.TestCase):
 
         structure = parser.parseTokens(mylist)
         mystruct = RPQRStackSymbol(
-            15, [RPQRToken(13, "DUMMY"), RPQRToken(6, "argument")])
+            16, [RPQRToken(13, "DUMMY"), RPQRToken(6, "argument")])
         self.assertEqual(structure, mystruct)
 
     def testParserTwo(self):
@@ -46,6 +46,31 @@ class TestRPQRParser(unittest.TestCase):
                   ]
 
         structure = parser.parseTokens(mylist)
-        mystruct = RPQRStackSymbol(15, [RPQRStackSymbol(15, [RPQRToken(13, "DUMMY"), RPQRToken(
-            6, "argument")]), RPQRStackSymbol(15, [RPQRToken(13, "DUMMY"), RPQRToken(6, "argument2")])], "&")
+        mystruct = RPQRStackSymbol(16, [RPQRStackSymbol(16, [RPQRToken(13, "DUMMY"), RPQRToken(
+            6, "argument")]), RPQRStackSymbol(16, [RPQRToken(13, "DUMMY"), RPQRToken(6, "argument2")])], "&")
+        self.assertEqual(structure, mystruct)
+
+    def testSubstatementParsing(self):
+        config = RPQRConfiguration(
+            ["./test/query/language/parser/mock_plugins"], [])
+        parser = RPQRParser(config)
+
+        mylist = [RPQRToken(config.commandTypes["SUB"], "SUB"),
+                  RPQRToken(config.tokenTypes["leftBracelet"], "("),
+                  RPQRToken(config.commandTypes["DUMMY"], "DUMMY"),
+                  RPQRToken(config.tokenTypes["leftBracelet"], "("),
+                  RPQRToken(config.tokenTypes["string"], "argument"),
+                  RPQRToken(config.tokenTypes["rightBracelet"], ")"),
+                  RPQRToken(config.tokenTypes["and"], "&"),
+                  RPQRToken(config.commandTypes["DUMMY"], "DUMMY"),
+                  RPQRToken(config.tokenTypes["leftBracelet"], "("),
+                  RPQRToken(config.tokenTypes["string"], "argument2"),
+                  RPQRToken(config.tokenTypes["rightBracelet"], ")"),
+                  RPQRToken(config.tokenTypes["rightBracelet"], ")"),
+                  RPQRToken(config.tokenTypes["end"], ""),
+                  ]
+
+        structure = parser.parseTokens(mylist)
+        mystruct = RPQRStackSymbol(16, [RPQRToken(15, "SUB"), RPQRStackSymbol(16, [RPQRStackSymbol(16, [RPQRToken(13, "DUMMY"), RPQRToken(
+            6, "argument")]), RPQRStackSymbol(16, [RPQRToken(13, "DUMMY"), RPQRToken(6, "argument2")])], "&")])
         self.assertEqual(structure, mystruct)
