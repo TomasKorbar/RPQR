@@ -227,6 +227,7 @@ class RPQRParser:
                     else:
                         curStatement: RPQRStackSymbol
                         curStatement.type = self.nonTerminalTypes["statement"]
+                        curStatement.operator = self.stack[1].operator
                         curStatement.setChildren(self.stack[1].children)
                     break
                 elif requiredAction == RPQRPrecedentCommands.LOADMORE:
