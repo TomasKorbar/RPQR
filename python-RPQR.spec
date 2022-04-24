@@ -1,5 +1,5 @@
 Name:           python-RPQR
-Version:        1.0.1
+Version:        1.0.2
 Release:        1%{?dist}
 Summary:        RPM Package Query Resolver
 
@@ -9,7 +9,8 @@ Source0:        RPQR.tgz
 
 BuildArch:      noarch
 Requires:       python3 python3-dnf
-BuildRequires:  python3 python3-devel sed python3-wheel pip python3-setuptools
+BuildRequires:  python3 python3-devel sed python3-wheel
+BuildRequires:  pip python3-setuptools python3-dnf python3-networkx python3-requests
 
 %global _description %{expand:
 RPQR is an originally proposed tool which is supposed to make maintainers life easier by

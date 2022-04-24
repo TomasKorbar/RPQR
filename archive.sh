@@ -9,4 +9,4 @@ cp    RPQR.1       RPQR
 tar -czvf RPQR.tgz RPQR
 rm -rf ./RPQR
 fedpkg --release f34 srpm
-rpmbuild -ra ./python-RPQR-1.0.1-1.fc34.src.rpm
+rpmbuild -ra ./python-RPQR-1.0.2-1.fc34.src.rpm
