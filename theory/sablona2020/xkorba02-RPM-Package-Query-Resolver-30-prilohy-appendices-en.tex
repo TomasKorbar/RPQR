@@ -11,3 +11,38 @@
 
 %\chapter{Poster}
 
+\chapter{Acronyms}
+
+Since there are many used acronyms in this thesis, it is appropriate to list them and explain them
+for better understanding.
+
+\begin{itemize}
+  \item API - Application Programming Interface - interface for use of different project
+  \item DNF - Dandified YUM - Successor of the YUM package manager
+  \item RPM - Red Hat Package Manager - Low-level RPM package manager 
+  \item RPQR - RPM Package Query Resolver - Project created during this thesis
+  \item YUM - The Yellowdog Updater, Modified - High-level RPM package manager
+  \item GPL - General Public License - Open source license
+\end{itemize}
+
+\chapter{Installation}
+
+There is a description of how to install the RPQR project either from a source or an RPM package.
+
+
+Installation from the source can be performed with \textbf{pip install .} command executed from the
+the root of the project source.
+
+
+Installation of the RPRQ projects' RPM package has to be done with help of the Fedora Copr repository.
+
+
+\textbf{\#dnf copr enable tkorbar/RPQR; dnf install -y python3-RPQR}
+
+
+If you do not wish to receive updates or install RPQR in the future then you need to remove the
+repository configuration from your system.
+
+
+\textbf{\#dnf copr disable tkorbar/RPQR}
+

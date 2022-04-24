@@ -4,30 +4,12 @@ Author: Tomáš Korbař (tomas.korb@seznam.cz)
 Copyright 2021 - 2022 Tomáš Korbař
 '''
 
-from enum import Enum
 import logging
 from typing import Optional, List
 
 from rpqr.library.RPQRConfiguration import RPQRConfiguration
 from rpqr.query.language.scanner import RPQRToken
-
-
-class States(Enum):
-    """ States of scanners FSM.
-    """
-    START = 0
-    AND = 1
-    OR = 2
-    NUMBER = 3
-    COMMAND = 4
-    STARTSTRING = 5
-    STRINGCONTENT = 6
-    ENDSTRING = 7
-    LEFTBRACELET = 8
-    RIGHTBRACELET = 9
-    NOT = 10
-    COMMA = 11
-
+from rpqr.query.language.scanner import RPQRScannerStates
 
 class RPQRScanner:
     """ Scanner of RPQR language.
@@ -54,7 +36,7 @@ class RPQRScanner:
         """
         tokens = []
         curToken = RPQRToken()
-        curState = States.START
+        curState = RPQRScannerStates.START
         curInputIndex = 0
         # typical FSM for scanning of input string
         while curInputIndex < len(input) + 1:
@@ -62,55 +44,55 @@ class RPQRScanner:
                 c = input[curInputIndex]
             else:
                 c = ''
-            if curState == States.START:
+            if curState == RPQRScannerStates.START:
                 if c == '':
                     break
                 elif c == '(':
                     curToken = RPQRToken(self.tokenTypes["leftBracelet"], c)
-                    curState = States.LEFTBRACELET
+                    curState = RPQRScannerStates.LEFTBRACELET
                 elif c == ')':
                     curToken = RPQRToken(self.tokenTypes["rightBracelet"], c)
-                    curState = States.RIGHTBRACELET
+                    curState = RPQRScannerStates.RIGHTBRACELET
                 elif c == '&':
                     curToken = RPQRToken(self.tokenTypes["and"], c)
-                    curState = States.AND
+                    curState = RPQRScannerStates.AND
                 elif c == '|':
                     curToken = RPQRToken(self.tokenTypes["or"], c)
-                    curState = States.OR
+                    curState = RPQRScannerStates.OR
                 elif c == '\'':
                     curToken = RPQRToken(self.tokenTypes["string"], '')
-                    curState = States.STARTSTRING
+                    curState = RPQRScannerStates.STARTSTRING
                 elif c == '~':
                     curToken = RPQRToken(self.tokenTypes["not"], c)
-                    curState = States.NOT
+                    curState = RPQRScannerStates.NOT
                 elif c == ',':
                     curToken = RPQRToken(self.tokenTypes["comma"], c)
-                    curState = States.COMMA
+                    curState = RPQRScannerStates.COMMA
                 elif c.isnumeric():
                     curToken = RPQRToken(self.tokenTypes["number"], c)
-                    curState = States.NUMBER
+                    curState = RPQRScannerStates.NUMBER
                 elif c.isalpha():
                     curToken = RPQRToken(self.tokenTypes["command"], c)
-                    curState = States.COMMAND
+                    curState = RPQRScannerStates.COMMAND
                 elif not c.isspace():
                     logging.error("Lexical error while reading new token near %s in column %s" % (
                         c, curInputIndex))
                     return None
                 curInputIndex += 1
-            elif curState == States.AND:
+            elif curState == RPQRScannerStates.AND:
                 tokens.append(curToken)
-                curState = States.START
-            elif curState == States.OR:
+                curState = RPQRScannerStates.START
+            elif curState == RPQRScannerStates.OR:
                 tokens.append(curToken)
-                curState = States.START
-            elif curState == States.NUMBER:
+                curState = RPQRScannerStates.START
+            elif curState == RPQRScannerStates.NUMBER:
                 if c.isnumeric():
                     curToken.appendToContent(c)
                     curInputIndex += 1
                 else:
                     tokens.append(curToken)
-                    curState = States.START
-            elif curState == States.COMMAND:
+                    curState = RPQRScannerStates.START
+            elif curState == RPQRScannerStates.COMMAND:
                 if c.isalpha():
                     curToken.appendToContent(c)
                     curInputIndex += 1
@@ -121,43 +103,43 @@ class RPQRScanner:
                         return None
                     curToken.type = self.commandTypes[curToken.content]
                     tokens.append(curToken)
-                    curState = States.START
-            elif curState == States.STARTSTRING:
+                    curState = RPQRScannerStates.START
+            elif curState == RPQRScannerStates.STARTSTRING:
                 if c.isalnum() or c in self.allowedSpecialCharacters:
                     curToken.appendToContent(c)
                     curInputIndex += 1
-                    curState = States.STRINGCONTENT
+                    curState = RPQRScannerStates.STRINGCONTENT
                 elif c == '\'':
-                    curState = States.ENDSTRING
+                    curState = RPQRScannerStates.ENDSTRING
                 else:
                     self.logger.error("Lexical error while reading string literal near %s in column %s missing '" % (
                         c, curInputIndex))
                     return None
-            elif curState == States.STRINGCONTENT:
+            elif curState == RPQRScannerStates.STRINGCONTENT:
                 if c.isalnum() or c in self.allowedSpecialCharacters:
                     curToken.appendToContent(c)
                     curInputIndex += 1
                 elif c == '\'':
-                    curState = States.ENDSTRING
+                    curState = RPQRScannerStates.ENDSTRING
                 else:
                     self.logger.error("Lexical error while reading string literal near %s in column %s missing '" % (
                         c, curInputIndex))
                     return None
-            elif curState == States.ENDSTRING:
+            elif curState == RPQRScannerStates.ENDSTRING:
                 tokens.append(curToken)
                 curInputIndex += 1
-                curState = States.START
-            elif curState == States.LEFTBRACELET:
+                curState = RPQRScannerStates.START
+            elif curState == RPQRScannerStates.LEFTBRACELET:
                 tokens.append(curToken)
-                curState = States.START
-            elif curState == States.RIGHTBRACELET:
+                curState = RPQRScannerStates.START
+            elif curState == RPQRScannerStates.RIGHTBRACELET:
                 tokens.append(curToken)
-                curState = States.START
-            elif curState == States.NOT:
+                curState = RPQRScannerStates.START
+            elif curState == RPQRScannerStates.NOT:
                 tokens.append(curToken)
-                curState = States.START
-            elif curState == States.COMMA:
+                curState = RPQRScannerStates.START
+            elif curState == RPQRScannerStates.COMMA:
                 tokens.append(curToken)
-                curState = States.START
+                curState = RPQRScannerStates.START
         tokens.append(RPQRToken(self.tokenTypes["end"]))
         return tokens

@@ -8,4 +8,6 @@ Copyright 2021 - 2022 Tomáš Korbař
 """
 
 from .RPQRToken import RPQRToken
+from .RPQRScannerStates import RPQRScannerStates
 from .RPQRScanner import RPQRScanner
+

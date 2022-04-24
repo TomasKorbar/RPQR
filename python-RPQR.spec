@@ -9,7 +9,7 @@ Source0:        RPQR.tgz
 
 BuildArch:      noarch
 Requires:       python3 python3-dnf
-BuildRequires:  python3-devel sed python3-wheel pip python3-setuptools
+BuildRequires:  python3 python3-devel sed python3-wheel pip python3-setuptools
 
 %global _description %{expand:
 RPQR is an originally proposed tool which is supposed to make maintainers life easier by
@@ -43,7 +43,7 @@ install -m 0644 -vp RPQR.1                  %{buildroot}/%{_mandir}/man1/
 %pyproject_install
 
 %check
-true
+python3 -m unittest discover -p "Test*" -s ./test/
 
 %files -n python3-RPQR
 %license LICENSE

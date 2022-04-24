@@ -11,6 +11,6 @@ setup(name='rpqr',
       description='RPM package query resolver',
       author='Tomas Korbar',
       author_email='tkorbar@redhat.com',
-      packages=find_packages(),
+      packages=find_packages(exclude=["test.*", "test"]),
       scripts=["bin/RPQROrphaned", "bin/RPQR"]
      )

@@ -386,9 +386,9 @@ With configuration file withstands more choices.
 \end{itemize}
 
 \chapter{Research}
-With good knowledge about the current state of utilities and technologies, this chapter can explore
+With a good knowledge about the current state of utilities and technologies, this chapter can explore
 the best approach to resolving complex queries about RPM packages. In each section,
-there is described a particular approach was chosen as the best solution to an individual problem.
+there is described a particular approach chosen as the best solution to an individual problem.
 
 \section{Project structure}
 Python project is most often divided into folders that contain logically related classes.
@@ -402,12 +402,10 @@ like that.
 Illustration of proposed structure:
 
 \begin{lstlisting}
-bin
+bin - executables of the project
 bin/script
-project
-project/example_module
-test
-test/example_module
+project - project classes
+test - all the particular tests
 \end{lstlisting}
 
 \newpage
@@ -415,7 +413,7 @@ test/example_module
 \section{Retrieval of information from repository}
 While there are approaches that would allow individual retrieval of metadata from repositories,
 such as custom downloading of XMLs and database archives, there is no reason for that. DNF provides
-API that allows an application to use its already implemented downloading of metadata.
+API\cite{DNFPackageManager} that allows an application to use its already implemented downloading of metadata.
 The best way to use it for this purpose is to create a query that matches every package
 accessible through configured repositories.
 
@@ -450,19 +448,19 @@ will be done by providing base classes that plugins need to extend.
 \newpage
 
 \section{Internal structure of data representation}
-For RPQR to be able to effectively walk through packages and filter them by attributes and relationships,
+For RPQR, to be able to effectively walk through packages and filter them by attributes and relationships,
 there has to be an appropriate way to access them as quickly as possible. That is why by nature, a graph
 is the best way. Using graphs will allow the RPQR project to use graph algorithms such as breadth-first search
 or depth-first search. Python itself does not have built-in graph support, so the RPQR project can either
 contain its implementation or use a library.
 
-Networkx seems to be a very quick and easy-to-use implementation of graph abstract data type which is
+NetworkX\cite{NetworkX} seems to be a very quick and easy-to-use implementation of graph abstract data type which is
 also capable of rendering a graph with multiple algorithms when needed. Another very useful feature
-is that networkx can save the graph to JSON formatted string and load it again from this string.
+is that NetworkX can save the graph to JSON formatted string and load it again from this string.
 
-Example of building graph with Networkx:
+Example of building graph using NetworkX API:
 \begin{lstlisting}
-  import networkx as netx
+  import NetworkX as netx
   graph = netx.Graph()
   graph.add_node(1)
   graph.add_node(2)
@@ -470,9 +468,9 @@ Example of building graph with Networkx:
 \end{lstlisting}
 
 \section*{Configuration}
-Some options are uncomfortable to enter through the command line repeatedly and because of that should
+Some options are uncomfortable to enter through the command line repeatedly, therefore they should
 be stored in a persistent file. The structure of the configuration file can have many forms but Python has
-a built-in module named configparser which defines a human-readable format appropriate for the RPQR project.
+a built-in module named configparser\cite{configparser} which defines a human-readable format appropriate for the RPQR project.
 Configparser uses a section to divide configuration into logically related blocks, there will be
 the main section for global options like URLs of repositories. Each plugin will have its section
 where it will be possible to disable it or provide individual information necessary for its proper
@@ -499,7 +497,7 @@ RPQR will use a finite state machine for scanning tokens present in entered quer
 in a list that can be further processed. Each of the lexical tokens is defined by regular expression
 and when not recognized can be marked as invalid.
 
-Finite state machine graph:
+The finite state machine representing the considered regular expressions is as follows:
 
 \includegraphics[scale=0.5]{obrazky-figures/RPQR_FSM.png}
 
@@ -519,7 +517,7 @@ The lexical tokens that occur in RPQR language are:
 \end{itemize}
 
 \subsection*{Syntactic analysis}
-RPQR language syntactic analysis will be mainly precedent syntactic analysis because the language is statement-oriented. The precedent syntactic analysis uses an algorithm with a symbol stack and acts accordingly to the precedent
+RPQR language syntactic analysis will be mainly precedent syntactic analysis because the language is statement-oriented. The precedent syntactic analysis uses an algorithm with a~symbol stack and acts accordingly to the precedent
 syntactic table. This table defines what operators can be used at particular places and their respective
 priorities. This solves the problem of evaluation of statements but there is still the matter of command
 recognition and validation of argument types. Every command has to define what arguments it needs to work
@@ -602,6 +600,8 @@ This command will receive the entire graph of packages as input and will be resp
 a set of packages that conform to its filter. Since this command does not accept any arguments, as there
 are no arguments supplied, the filter is static and can not be affected by the user.
 
+There are currently no plugins providing such type of command.
+
 \subsection*{Command with arguments}
 
 \textit{ADVANCEDCOMMAND('package', 3)}
@@ -610,6 +610,8 @@ Command used like this accepts two arguments which alter his behavior. The first
 and the second is a number. RPQR language does not consider whitespace characters, so there is no
 difference or problem with their presence in the query. Commands like this can have more advanced
 behavior and are generally more useful.
+
+Example of this type of command is: \textit{WHATDEPENDSON('libyang-1.0.225-1.fc34.x86\_64', 1)}
 
 \subsection*{Command accepting subset as an argument}
 
@@ -623,13 +625,15 @@ with a specific context. For a better explanation of how the query could work. T
 gather packages that contain string \textit{cups} in their name. The second could then filter only
 three first by their name in alphabetical order.
 
+Example of this type of command is: \textit{SUBSETNAMELIKE('x86\_64', NAMELIKE('libyang'))}
+
 \newpage
 
 \subsection*{Operators}
 
 \textbf{Intersection}
 
-\textit{FIRSTCOMMAND() \& SECONDCOMMAND()}
+\textit{FIRSTCOMMAND() $\&$ SECONDCOMMAND()}
 
 Operator \& can be used as an intersection between sets provided as outputs of two commands or sets.
 Packages returned by query specified like this have to be present in both the left and right set.
@@ -644,27 +648,33 @@ left or right set of this statement.
 
 \textbf{Negation}
 
-\textit{\textasciitilde FIRSTCOMMAND()}
+\textit{\textasciitilde COMMAND()}
 
 Operator \textasciitilde can be used to specify that the result set of packages can contain only such
-packages that do not conform to conditions specified by \textit{FIRSTCOMMAND}. It is important
+packages that do not conform to conditions specified by \textit{COMMAND}. It is important
 to keep in mind that the input of the command is always the entire graph.
 
-\subsection*{Complex queries and explanation of their semantics}
+\subsection*{Priorities of the operators}
 
 When in need of complex conditions and a combination of commands, it is very useful to use bracelets
 to force priority of evaluation and to avoid confusion between what the user expects as a result and
-what is the real result?
+what is the real result. Without the bracelets, the standard priority is as follows:
+
+\begin{itemize}
+  \item \textasciitilde
+  \item \&
+  \item |
+\end{itemize}
 
 \textbf{Example of bracelet use:}
 
-\textit{FIRSTCOMMAND() \& SECONDCOMMAND() | THIRDCOMMAND()}
+\textit{FIRSTCOMMAND() $\&$ SECONDCOMMAND() | THIRDCOMMAND()}
 
 Explanation of this query is: return packages that conform to conditions of \textit{FIRSTCOMMAND}
 and \textit{SECONDCOMMAND} or packages that conform to \textit{THIRDCOMMAND}. This is caused
 by the priority of operators.
 
-\textit{FIRSTCOMMAND() \& (SECONDCOMMAND() | THIRDCOMMAND())}
+\textit{FIRSTCOMMAND() $\&$ (SECONDCOMMAND() | THIRDCOMMAND())}
 
 This query looks very similar but some bracelets change their meaning very significantly.
 Packages in result set has to conform to \textit{FIRSTCOMMAND} and to \textit{SECONDCOMMAND} or 
@@ -701,13 +711,13 @@ in the cache. Fortunately, all this is supported by the networkX library.
 RPQR needs to have a Python application programming interface so external developers can use its plugins
 and features even more efficiently than through a command-line interface and create their solutions.
 API will be using the same RPQR language as the command line interface and queries will be returning
-networkx graphs. This way, applications using the API can walk through nodes that represent packages
+NetworkX graphs. This way, applications using the API can walk through nodes that represent packages
 and perform any transformation of the graph that they deem useful.
 
 \newpage
 
 \section{Command line interface design}
-RPQR tool will be using one main positional option that has to be provided and that is a query written
+RPQR tool will be using one main positional option that has to be provided and that is a~query written
 in RPQR language. By default, the output will go into standard output and log messages to standard error output.
 
 The first two options that can, but do not have to be specified will be whether the user wants to see a visualization
@@ -724,17 +734,26 @@ assigned task. Each section will cover the limitations of the presented solution
 in the future to overcome them. Usage of the RPQR project will also be described in a form of a user
 manual and a description of the way how new plugins are supposed to be developed using the RPQR interface.
 
+\newpage
+
 \section{Important parts of implementation}
 This section will show the most important parts of the implementation and structure of Python code.
+Inheritance and general content of classes can be found on the class diagram.
+
+\includegraphics[scale=0.65]{obrazky-figures/class_diagram.png}
 
 \subsection*{RPQRConfiguration}
 RPQRConfiguration class serves for purposes of loading plugins and creating RPQR language structures
 necessary for its successful parsing and interpreting. An instance of this class has to be created for
 every use of the RPQR project and is used by all following components and their diverse operations.
 
-\newpage
-
 \textbf{Initialization of plugins}
+
+This is the centerpiece of plugin loading. The plugins are loaded by the following method, which walks through all configured directories
+which according to configuration should contain plugin modules and if its file does not start with
+an underscore then attempts to import them and create their instance. Two conditionals relate to the plugin configuration. The first one is checking whether a configuration related to
+this plugin exists and thus should be provided to it and the second one is there for a case when
+a user does not want to use the plugin at all, to save space for example, or to speed up processing.
 
 \begin{lstlisting}
 def _initializePlugins(self):
@@ -764,31 +783,31 @@ def _initializePlugins(self):
           self.plugins.append(pluginInstance)
 \end{lstlisting}
 
-This is the centerpiece of plugin loading. This method walks through all configured directories
-which according to configuration should contain plugin modules and if its file does not start with
-an underscore then attempts to import them and create their instance. Two conditionals relate to the plugin configuration. The first one is checking whether a configuration related to
-this plugin exists and thus should be provided to it and the second one is there for a case when
-a user does not want to use the plugin at all, to save space for example, or to speed up processing.
+\newpage
 
 \subsection*{RPQRLoader}
 RPQRLoader is a class responsible for the loading of data about packages through plugins and constructing
 graph structures out of them. It is taking advantage of DNF API to retrieve the data as efficiently as
 possible and access them in the same way as the package manager would.
 
-\newpage
-
 \textbf{Construction of graph}
 
-\begin{lstlisting}
-def createDatabase(self, cache: str = None) -> networkx.MultiDiGraph:
-  """ Get graph of packages with data and relations described by plugins
+This method distinguishes between plugins that are supposed to add attributes to package nodes and
+plugins that create relations between individual packages. The first kind is executed first so
+relationship plugins can depend on them later. Each instance of the plugin has its fillData method
+which is called for each package that was retrieved by DNF API. After the graph is built, a list
+of plugins that were present during the creation of this structure is saved into the plugins list for easier
+detection of invalid cache.
 
+\begin{lstlisting}
+def createDatabase(self, cache: str = None) -> NetworkX.MultiDiGraph:
+  """ Get graph of packages with data and relations described by plugins
   :param cache: path to cache file, defaults to None
   :type cache: str, optional
   :return: Graph of packages
-  :rtype: networkx.MultiDiGraph
+  :rtype: NetworkX.MultiDiGraph
   """
-  graph = networkx.MultiDiGraph()
+  graph = NetworkX.MultiDiGraph()
   dataPlugins = [plugin for plugin in self.plugins if isinstance(
       plugin, RPQRDataPlugin)]
   relationPlugins = [plugin for plugin in self.plugins if isinstance(
@@ -797,12 +816,9 @@ def createDatabase(self, cache: str = None) -> networkx.MultiDiGraph:
   pluginRecords = []
   for plugin in dataPlugins + relationPlugins:
       pluginRecords.append((plugin, plugin.__class__.__name__))
-
   ...
-
   av_query = self._getAvailableQuery()
   q_avail = av_query.run()
-
   for id, pkg in enumerate(q_avail):
       graph.add_node(id)
       for pluginInstance in dataPlugins:
@@ -819,18 +835,15 @@ def createDatabase(self, cache: str = None) -> networkx.MultiDiGraph:
   return graph
 \end{lstlisting}
 
-This method distinguishes between plugins that are supposed to add attributes to package nodes and
-plugins that create relations between individual packages. The first kind is executed first so
-relationship plugins can depend on them later. Each instance of the plugin has its fillData method
-which is called for each package that was retrieved by DNF API. After the graph is built, a list
-of plugins that were present during the creation of this structure is saved into the plugins list for easier
-detection of invalid cache.
-
 \subsection*{RPQRScanner}
 RPQRScanner is a class responsible for scanning the query entered in RPQR language format. It is able
 to recognize when there is a lexical error in the query and is used to parse a string into tokens.
 
 \textbf{Implementation of finite state machine}
+
+Method getTokens is responsible for creating a list of tokens out of input. It is composed of
+a while cycle that parses characters and switches the state of the machine accordingly. It is strictly
+implemented accordingly to the graph of FSM which was mentioned earlier.
 
 \begin{lstlisting}
 def getTokens(self, input: str) -> Optional[List[RPQRToken]]:
@@ -869,16 +882,12 @@ def getTokens(self, input: str) -> Optional[List[RPQRToken]]:
               curState = States.START
 \end{lstlisting}
 
-Method getTokens is responsible for creating a list of tokens out of input. It is composed of
-a while cycle that parses characters and switches the state of the machine accordingly. It is strictly
-implemented accordingly to the graph of FSM which was mentioned earlier.
-
 \subsection*{RPQRParser}
 
 RPQRParser is a class responsible for the processing of lexical tokens and the construction of abstract syntactic
 trees that can be interpreted in a strictly defined way. The class contains helper methods for easier
 manipulation with a list of tokens and methods considered as callbacks to certain operations encountered
-in the source query. These operations are uses of operators like \textit{\&} or \textit{\textasciitilde}
+in the source query. These operations are uses of operators like \textit{$\&$} or \textit{\textasciitilde}
 which needs the abstract syntactic tree to be constructed in a certain way.
 
 \textbf{parsing algorithm}
@@ -1033,10 +1042,10 @@ control for example when a cache file should be invalidated and overwritten.
 
   # labeling requires some more processing
   ...
-  pos = networkx.spring_layout(result)
-  networkx.draw_networkx(result, pos=pos, with_labels=True, labels=labelDict)
+  pos = NetworkX.spring_layout(result)
+  NetworkX.draw_NetworkX(result, pos=pos, with_labels=True, labels=labelDict)
   edgeLabels = dict([((n1, n2), key) for n1, n2, key in result.edges])
-  networkx.draw_networkx_edge_labels(result, pos=pos, edge_labels=edgeLabels)
+  NetworkX.draw_NetworkX_edge_labels(result, pos=pos, edge_labels=edgeLabels)
   plt.show()
 \end{lstlisting}
 
@@ -1136,8 +1145,8 @@ of operators to create an appropriate combination of commands to get the results
 
 RPQR also supports parenthesis to provide further means to set the priority of statements that are specified.
 Use parenthesis to make your query more readable and to make sure that the result is what you expect.
-\textit{statement1 \& (statement2 | statement3)} This statement is not equal to the version without
-parenthesis specified like this \textit{statement1 \& statement2 | statement3}. The semantic of the first
+\textit{statement1 $\&$ (statement2 | statement3)} This statement is not equal to the version without
+parenthesis specified like this \textit{statement1 $\&$ statement2 | statement3}. The semantic of the first
 statement is: \textbf{Find packages that conform to statement1 and at the same time conform to either
 statement2 or statement3}. On the other hand, the second statement meaning is: \textbf{Find packages
 that conform to both statement1 and statement2 but if the package conforms to statement3 then it does not
@@ -1394,7 +1403,7 @@ have different naming conventions in DNF API than the binary ones and RPQR has t
     args = [str, int]
     name = "DEPENDSONUSER"
 
-    def execute(graph: networkx.MultiDiGraph, args: list) -> List[int]:
+    def execute(graph: NetworkX.MultiDiGraph, args: list) -> List[int]:
         """ Get list of ids of packages which depend on user specified in args[0]
         to max depth args[1]
 
@@ -1506,9 +1515,123 @@ of RPQR project.
 
 Every use of the API needs to start with creating an instance of \textit{RPQRConfiguration} class.
 After that, the only other required thing is an instance of \textit{RPQRQuery} class and then it is
-possible to create perform queries. Results are returned as a \textit{networkx} graph and have to be
+possible to create perform queries. Results are returned as a \textit{NetworkX} graph and have to be
 worked with as. This script walks through orphaned packages and finds other maintainers affected by
 their orphaning. 
+
+\section{Testing}
+
+To ensure that the RPQR project is maintainable, testing is needed. Since the RPQR codebase is written
+in a way that allows dividing the project into individually functional blocks, it is possible to test
+each part of it separately. The structure of the tests directory copies the structure of the source code.
+All tests use \textit{unittest}\cite{unittest} Python module which provides functions necessary for testing and
+supports automatic discovery which can be executed with the command: python3 -m unittest discover -p "Test*" -s ./test/.
+
+For each significant class in the RPQR project, there is a test case that contains several tests for
+individual features. Since test cases are similar, the principle of this technique will be illustrated
+in one of those cases which is the most complicated one.
+
+This test case is meant to verify that RPQRParser can parse tokens prepared by RPQRScanner
+and create an abstract syntactic tree out of them. This should be isolated from the implementation
+of any plugins, and thus mock plugins were created. Mock plugins are loaded into the configuration
+and provide simple commands.
+
+The first test is a test of parsing a simple call of a command. The abstract syntactic tree produced by
+the parser has to be identical to the one manually constructed according to the way how the algorithm
+should work. The second test is performing a similar task but tokens are prepared as if a statement
+with $\&$ operator was supplied in the query.
+
+The third test is a result of the development cycle after the first release of the RPQR project. An issue
+with the parsing of statements supplied as arguments was discovered and fixed. To prevent any future
+regression, the problem was fixed with a commit containing documentation about it and this test can verify
+that this problem will not be re-introduced in any of the future releases. This approach is very
+useful and should be enforced on any future contributions or new features since it allows the project
+to be tested for real problems and extends test coverage.
+
+\newpage
+
+\begin{lstlisting}
+  class TestRPQRParser(unittest.TestCase):
+    def testParserOne(self):
+        config = RPQRConfiguration(
+            ["./test/query/language/parser/mock_plugins"], [])
+        parser = RPQRParser(config)
+        mylist = [...]
+
+        structure = parser.parseTokens(mylist)
+        mystruct = RPQRStackSymbol(
+            16, [RPQRToken(13, "DUMMY"), RPQRToken(6, "argument")])
+        self.assertEqual(structure, mystruct)
+
+    def testParserTwo(self):
+        config = RPQRConfiguration(
+            ["./test/query/language/parser/mock_plugins"], [])
+        parser = RPQRParser(config)
+        mylist = [...]
+
+        structure = parser.parseTokens(mylist)
+        mystruct = RPQRStackSymbol(16, [RPQRStackSymbol(16, [RPQRToken(13, "DUMMY"), RPQRToken(
+            6, "argument")]), RPQRStackSymbol(16, [RPQRToken(13, "DUMMY"), RPQRToken(6, "argument2")])], "&")
+        self.assertEqual(structure, mystruct)
+
+    def testSubstatementParsing(self):
+        config = RPQRConfiguration(
+            ["./test/query/language/parser/mock_plugins"], [])
+        parser = RPQRParser(config)
+
+        mylist = [...]
+
+        structure = parser.parseTokens(mylist)
+        mystruct = RPQRStackSymbol(16, [RPQRToken(15, "SUB"), RPQRStackSymbol(16, [RPQRStackSymbol(16, [RPQRToken(13, "DUMMY"), RPQRToken(
+            6, "argument")]), RPQRStackSymbol(16, [RPQRToken(13, "DUMMY"), RPQRToken(6, "argument2")])], "&")])
+        self.assertEqual(structure, mystruct)
+\end{lstlisting}
+
+\newpage
+
+\section{Distribution}
+
+The RPQR project is distributed through a Python package which can be installed with the pip\cite{pip} tool.
+At the moment of release 1.0.1, it is possible to install it from the source directory with the pip
+tool or use the RPM package. RPM package is provided by a public repository hosted on Fedora copr\footnote{https://copr.fedorainfracloud.org/coprs/tkorbar/RPQR/}
+website. The package is built according to the spec file located in the source root directory.
+It uses prepared packaging macros and with them can install the project with the pip tool so
+installation is even more centralized and simplified. Every build also discovers and executes the tests.
+
+\begin{lstlisting}
+%prep
+%setup -q -n RPQR
+
+%generate_buildrequires
+
+%build
+%pyproject_wheel
+
+%install
+sed -i "s;\\./rpqr/loader/plugins/implementations;%{python3_sitelib}/rpqr/loader/plugins/implementations;g" example.conf
+mkdir -m 0755 -p %{buildroot}/%{_sysconfdir}
+install -m 0644 -vp example.conf            %{buildroot}/%{_sysconfdir}/rpqr.conf
+mkdir -m 0755 -p %{buildroot}/%{_mandir}/man1/
+install -m 0644 -vp RPQR.1                  %{buildroot}/%{_mandir}/man1/
+%pyproject_install
+
+%check
+python3 -m unittest discover -p "Test*" -s ./test/
+\end{lstlisting}
+
+The \textit{setup.py} script which uses Python setup tools is very simple but it fulfills its purpose and
+handles installation of project modules to their appropriate directories.
+
+\begin{lstlisting}
+setup(name='rpqr',
+    version='1.0.1',
+    description='RPM package query resolver',
+    author='Tomas Korbar',
+    author_email='tkorbar@redhat.com',
+    packages=find_packages(exclude=["test.*", "test"]),
+    scripts=["bin/RPQROrphaned", "bin/RPQR"]
+    )
+\end{lstlisting}
 
 \section{Evaluation}
 
@@ -1516,7 +1639,8 @@ RPQR projects' usefulness was evaluated with the \textit{RPQROrphaned} script me
 the API documentation. The previous solution needed tens of minutes to create a list of orphaned packages
 and maintainers that are affected, \textit{RPQROrphaned} script needs one minute on a system with a casual processor.
 
-There are results measured with the Linux time command when \textit{RPQROrphaned} is compared with \textit{find\_unblocked\_orphans.py}\cite{orphans}
+There are results measured with the Linux time command when \textit{RPQROrphaned} is compared with
+\textit{find\_unblocked\_orphans.py}\cite{orphans}
 script developed for the same purpose by Miroslav Hroncok with previously accessible technologies.
 
 \textbf{find\_unblocked\_orphans.py}
@@ -1544,17 +1668,3 @@ previous solutions and the project is ready to adapt to various new tasks that c
 All initial goals of this thesis were fulfilled and the project is ready for further development because
 of well-documented code and set of tests that can always verify whether new changes did not create a
 regression.
-
-\chapter{Acronyms}
-
-Since there are many used acronyms in this thesis, it is appropriate to list them and explain them
-for better understanding.
-
-\begin{itemize}
-  \item API - Application Programming Interface - interface for use of different project
-  \item DNF - Dandified YUM - Successor of the YUM package manager
-  \item RPM - Red Hat Package Manager - Low-level RPM package manager 
-  \item RPQR - RPM Package Query Resolver - Project created during this thesis
-  \item YUM - The Yellowdog Updater, Modified - High-level RPM package manager
-  \item GPL - General Public License - Open source license
-\end{itemize}
