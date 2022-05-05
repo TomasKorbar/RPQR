@@ -15,7 +15,6 @@ import json
 import sys
 
 from rpqr.library.RPQRConfiguration import RPQRConfiguration
-from rpqr.loader.RPQRLoader import RPQRLoader
 from rpqr.query.RPQRQuery import RPQRQuery
 
 """ This is script which allows user to work with rpqr from commandline.

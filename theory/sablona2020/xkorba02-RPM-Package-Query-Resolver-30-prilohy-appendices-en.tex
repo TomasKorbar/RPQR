@@ -35,7 +35,9 @@ the root of the project source.
 
 
 Installation of the RPRQ projects' RPM package has to be done with help of the Fedora Copr repository.
-
+Before you can use the RPQR project, you need to install the python3-dnf package from your
+systems' official repositories. This is necessary, because DNF API is not distributed through Python
+package index.
 
 \textbf{\#dnf copr enable tkorbar/RPQR; dnf install -y python3-RPQR}
 

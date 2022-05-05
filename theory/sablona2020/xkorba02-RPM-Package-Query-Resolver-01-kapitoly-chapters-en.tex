@@ -31,7 +31,7 @@ results for a faster understanding of the results.
 While crucial information about an RPM package is stored directly inside it within the header section,
 additional information as who maintains it or which bugs are currently known has to be searched
 in external sources of information. This chapter describes RPM packages and technologies which
-currently exist for working with them. Then we continue with a description of other subjects which are needed
+currently exist for working with them. Then there is a description of other subjects which are needed
 to successfully design and implement the RPQR project.
 
 \section{RPM package}
@@ -83,7 +83,7 @@ The store is composed of values after each other that are distinguished only by 
 
 \subsection*{The archive}
 The archive is a set of files and folders compressed with a compression algorithm. Its integrity
-can be verified with the signature specified.
+can be verified with the specified signature.
 
 \section{RPM repository}
 RPM repositories are directory structures that contain RPM packages and metadata which are needed
@@ -98,7 +98,7 @@ package manager look for databases with information about packages.
 Important databases:
 \begin{itemize}
   \item \textbf{primary} database which specifies all crucial information about each package as of version, description, or file list.
-  \item \textbf{other} database which contains other less important information e.g. changelog of a package
+  \item \textbf{other} database which contains other less important information e.g. changelog of a~package
 \end{itemize}
 
 \section{Package managers}
@@ -118,7 +118,7 @@ manually so the rpm utility is not often used by end-users of the systems.
 Yum package manager is historically the first manager that allowed easy downloading of packages
 from remote repositories and handling their dependencies \cite{YUMPackageManager}. It is currently deprecated and has been
 replaced by DNF. Reasons for deprecation and replacement were that YUM was not properly documented,
-it was not ready for a switch to python3, and the algorithm for dependency resolution was not strong enough
+it was not ready for a switch to Python3, and the algorithm for dependency resolution was not strong enough
 to handle all problems that withstand in modern RPM-based Linux distributions.
 
 \subsection*{DNF package manager}
@@ -126,7 +126,7 @@ DNF package manager is a successor of the older YUM package manager \cite{DNFPac
 on the system comfortably by handling all of the operations that are needed to retrieve package dependencies
 and resolve any possible conflicts. A~very often used feature is also system upgrades, when
 DNF can migrate a system from old versions of distribution to new ones. A~very important fact
-that needs to be stated is that DNF provides python API which can be used by other projects to retrieve metadata
+that needs to be stated is that DNF provides Python API which can be used by other projects to retrieve metadata
 from repositories and distinguish them.
 
 DNF is the only tool that is currently able to query repositories for metadata that are specified
@@ -141,7 +141,7 @@ or query based on complex relationships. It is not its job to resolve more diffi
 it would be wrong to force it to by extending its capabilities.
 
 \section{DNF API}
-DNF provides python API through which developers can interact with repositories and retrieve information.
+DNF provides Python API through which developers can interact with repositories and retrieve information.
 At first, an instance of \textit{Base} class has to be created and then specify repositories from which
 metadata should be retrieved. Call to \textit{fill\_sack} method after that will load the metadata
 and API can then execute queries that the DNF tool supports.
@@ -192,6 +192,7 @@ structure for internal representation of package metadata.
 \end{itemize}
 
 \subsection*{Data formats}
+\label{sec:dataformats}
 An appropriate data format needs to be chosen for storing data. Currently, many massively
 used formats could be suitable for the RPQR use case. The data format should be chosen accordingly to
 how much readability it can provide for a human developer and whether it can be used within versioning
@@ -267,7 +268,7 @@ Structured Query Language\cite{SQL} is a domain-specific language that is widely
 relational databases. SQL can select records based upon their attributes and relations but
 is not capable of describing complex recursive queries about graphs. Another caveat is that for a Python
 application, using standard Python libraries, to be able to use SQL, it would need to hold an instance of \textit{sqlite} database in memory and
-that could prove to be an unnecessary overhead that could slow execution down.
+that could prove to be an unnecessary overhead\footnote{Resources required to perform an operation} that could slow execution down.
 
 Example of SQL query:
 \textit{SELECT * FROM table WHERE id = 3}
@@ -322,7 +323,7 @@ Components that are needed for interpretation of RPQR language:
 
   The scanner is used to convert the source text of the language to tokens for further processing by the parser.
   Its crucial part is a finite state machine that reacts to characters in input and recognizes lexical
-  tokens. The scanner is also able to tell a user when some lexical error occurs and the query needs to be
+  tokens. The scanner is also able to tell a~user when some lexical error occurs and the query needs to be
   changed for it to be valid.
   
   \item \textbf{Parser}
@@ -331,8 +332,8 @@ Components that are needed for interpretation of RPQR language:
   internal representation of source text on input. The parser can recognize syntactic errors
   which occur during parsing and optionally inform the user about them. There are multiple techniques
   for syntactic analysis as Top-Down Parsing or Bottom-Up Parsing, which are algorithms
-  how to recognize language units on input. Both of these techniques use models for context-less
-  languages such as formal grammatic. Formal grammatic is a list of rules which are used to check
+  how to recognize language units on input. Both of these techniques use models for context-free
+  languages such as formal grammar. Formal grammar is a list of rules which are used to check
   whether the input is written in a language or not.
 
   \item \textbf{Interpreter}
@@ -357,15 +358,15 @@ Approach, when metadata is not updated unless the user wants to do so, could sav
 checking of the repository, but the user would be responsible for the consistency of metadata and repository
 state, which could prove problematic.
 
-RPQR could stick with the same approach as the DNF one. Rebuild metadata when they expire.
-The problem is that building internal structure and rebuilding cache could be a very time-consuming
-the operation, maybe even in a matter of minutes.
+RPQR could stick with the same approach as the DNF. That means rebuilding metadata when they expire.
+The problem is that building internal structure and rebuilding cache could be a~very time-consuming
+operation, maybe even in a matter of minutes.
 
 The third and maybe the most proper approach is to set the expiration time of metadata to some
-longer period. After such a period the time for the rebuilding of the cache will not be so important.
+longer period. After such a period the time, rebuilding of the cache will not be so important.
 Also if no change occurred then it is pointless to rebuild the data and it would be highly useful
-to rebuild only parts of internal data structures which do no longer correspond with the actual state
-of RPM repositories supplied in configuration.
+to rebuild only parts of internal data structures which do not longer correspond with the actual state
+of RPM repositories supplied in a configuration.
 
 \section{Configuration}
 The RPQR tool will need multiple options for it to work properly and accordingly to
@@ -379,7 +380,7 @@ With configuration file withstands more choices.
 \begin{itemize}
   \item Format of the configuration file.
         Multiple formats can be used. JSON or YAML is probably the most appropriate ones.
-        Their description was stated in previous sections.
+        Their description was stated in previous \hyperref[sec:dataformats]{sections}.
   \item What options should configuration include?
         Configuration should include only options which do not change often and thus do not force
         the user to change the file frequently.
@@ -419,7 +420,7 @@ accessible through configured repositories.
 
 \section{Customization and modification of functionalities}
 RPQR project needs to be able to adapt to changing demands on queries and the most simple way to
-achieve that is to create a system of loading plugins in a form of python modules. The Python script cannot dynamically load another module but because of the very
+achieve that is to create a system of loading plugins in a form of Python modules. The Python script cannot dynamically load another module but because of the very
 high level of introspection that Python provides, it is possible to achieve something very similar.
 When the plugin upholds certain defined rules, such as that class for load is named the same as the file,
 then it is possible to easily create an efficient algorithm for searching and importing accessible
@@ -509,11 +510,11 @@ The lexical tokens that occur in RPQR language are:
   \item right bracelet )
   \item and operator \&
   \item or operator |
-  \item negation operator ~
+  \item negation operator \textasciitilde
   \item number (consisting only of numeric characters e.g 123)
   \item string (hyphen separated string of alphanumeric and special characters e.g 'hello')
-  \item command (command contains only alpha characters and has to be described by a plugin e.g NAMELIKE)
-  \item comma used mainly as a separator for command arguments,
+  \item command (command contains only alpha characters and has to be described by a~plugin e.g NAMELIKE)
+  \item comma used mainly as a separator for command arguments ,
 \end{itemize}
 
 \subsection*{Syntactic analysis}
@@ -521,7 +522,7 @@ RPQR language syntactic analysis will be mainly precedent syntactic analysis bec
 syntactic table. This table defines what operators can be used at particular places and their respective
 priorities. This solves the problem of evaluation of statements but there is still the matter of command
 recognition and validation of argument types. Every command has to define what arguments it needs to work
-properly. The initial configuration of RPQR will load commands and create context less grammatic for them.
+properly. The initial configuration of RPQR will load commands and create context-free grammar for them.
 Because every command has a different name and there is no need for dynamic arguments, a distinction should
 be straightforward and effective.
 
@@ -570,6 +571,7 @@ in the table by what symbol is in input.
   \item = means only load new symbol
   \item > means that particular sub statements should be collapsed into one parent statement
   \item \# means that syntactic error occurred and provided input is not a valid RQPR language statement
+  \item X marks the end of parsing of a valid RPQR language query
 \end{itemize}
 
 \subsection*{Semantic analysis}
@@ -606,10 +608,10 @@ There are currently no plugins providing such type of command.
 
 \textit{ADVANCEDCOMMAND('package', 3)}
 
-Command used like this accepts two arguments which alter his behavior. The first one is a string
+Command used like this accepts two arguments which alter his behavior. The first one is a~string
 and the second is a number. RPQR language does not consider whitespace characters, so there is no
 difference or problem with their presence in the query. Commands like this can have more advanced
-behavior and are generally more useful.
+behavior and are generally more useful than the ones without arguments.
 
 Example of this type of command is: \textit{WHATDEPENDSON('libyang-1.0.225-1.fc34.x86\_64', 1)}
 
@@ -621,9 +623,9 @@ This is the most complex command that the RPQR language supports. This query wil
 entire graph with the command \textit{NAMELIKE('cups')} and then supply its result to the \textit{SUBSETCOMMAND}
 command. The second command will have the possibility to work with a subset and thus does not have to
 work with the entire graph which results in an ability to work more efficiently or perform operations
-with a specific context. For a better explanation of how the query could work. The first command could
-gather packages that contain string \textit{cups} in their name. The second could then filter only
-three first by their name in alphabetical order.
+with a specific context. For a~better explanation of how the query could work, here is an example.
+The first command could gather packages that contain string \textit{cups} in their name. The second
+could then filter only three first by their name in alphabetical order.
 
 Example of this type of command is: \textit{SUBSETNAMELIKE('x86\_64', NAMELIKE('libyang'))}
 
@@ -642,7 +644,7 @@ Packages returned by query specified like this have to be present in both the le
 
 \textit{FIRSTCOMMAND() | SECONDCOMMAND()}
 
-Operator | can be used to join sets provided by two commands or statements. It has a lower priority
+Operator | can be used to join sets provided by two commands or statements. It has a~lower priority
 than intersection and means that resulting sets will contain packages that are present in either
 left or right set of this statement.
 
@@ -650,7 +652,7 @@ left or right set of this statement.
 
 \textit{\textasciitilde COMMAND()}
 
-Operator \textasciitilde can be used to specify that the result set of packages can contain only such
+Operator \textasciitilde\space can be used to specify that the result set of packages can contain only such
 packages that do not conform to conditions specified by \textit{COMMAND}. It is important
 to keep in mind that the input of the command is always the entire graph.
 
@@ -696,7 +698,7 @@ Commands supplied by the plugin will also conform to the interface specified by 
 will have to list types of arguments that they need and implement a function that contains the logic of
 their filtering operations. Since many commands will be working with similar graph algorithms such as
 depth-first search or breadth-first search, the base class will provide an optimized implementation that
-just needs specification of filter in a form of function.
+just needs specification of filter in a~form of function.
 
 \section{Caching}
 
@@ -888,7 +890,7 @@ RPQRParser is a class responsible for the processing of lexical tokens and the c
 trees that can be interpreted in a strictly defined way. The class contains helper methods for easier
 manipulation with a list of tokens and methods considered as callbacks to certain operations encountered
 in the source query. These operations are uses of operators like \textit{$\&$} or \textit{\textasciitilde}
-which needs the abstract syntactic tree to be constructed in a certain way.
+which needs the abstract syntactic tree to be constructed in a~certain way.
 
 \textbf{parsing algorithm}
 
@@ -1051,7 +1053,7 @@ control for example when a cache file should be invalidated and overwritten.
 
 Implementation of RPQR script uses RPQR API and allows users to specify whether the result should be
 visualized or printed out through the standard output. Another very useful feature is the filtering of
-attributes and relations that should be included in the output. The script is using matplotlib python
+attributes and relations that should be included in the output. The script is using matplotlib Python
 library to render graphs of packages if required.
 
 \section{User manual}
@@ -1109,7 +1111,7 @@ url=https://src.fedoraproject.org/extras/pagure_owner_alias.json
 \end{lstlisting}
 
 The first section named \textit{RPQR} is the main configuration section that contains the most important
-setting. \textit{pluginDirectories} is an array of directories that contain python modules with RPQR
+setting. \textit{pluginDirectories} is an array of directories that contain Python modules with RPQR
 plugins. \textit{cache} is the path to the cache file, when this path is not supplied then RPQR utility
 will not use cache.
 
@@ -1311,7 +1313,7 @@ on which it will describe plugin development and the importance of individual pa
 \end{lstlisting}
 
 Plugin which wants to add a new attribute to packages needs to inherit from RPQRDataPlugin class.
-Please pay attention to the file name of your python module. The filename has to be the same as
+Please pay attention to the file name of your Python module. The filename has to be the same as
 the name of the class.
 
 \begin{lstlisting}
@@ -1523,7 +1525,7 @@ their orphaning.
 
 To ensure that the RPQR project is maintainable, testing is needed. Since the RPQR codebase is written
 in a way that allows dividing the project into individually functional blocks, it is possible to test
-each part of it separately. The structure of the tests directory copies the structure of the source code.
+each part of it separately. The structure of the tests copies the structure of the source code.
 All tests use \textit{unittest}\cite{unittest} Python module which provides functions necessary for testing and
 supports automatic discovery which can be executed with the command: python3 -m unittest discover -p "Test*" -s ./test/.
 
@@ -1531,10 +1533,13 @@ For each significant class in the RPQR project, there is a test case that contai
 individual features. Since test cases are similar, the principle of this technique will be illustrated
 in one of those cases which is the most complicated one.
 
-This test case is meant to verify that RPQRParser can parse tokens prepared by RPQRScanner
+\subsection*{Test case description}
+
+The following test case is meant to verify that the RPQRParser can parse tokens prepared by the RPQRScanner
 and create an abstract syntactic tree out of them. This should be isolated from the implementation
-of any plugins, and thus mock plugins were created. Mock plugins are loaded into the configuration
-and provide simple commands.
+of any plugins, and thus mock plugins were created\footnote{\textit{Mock} means that a component just acts like
+its true implementation but contains only parts that are relevant for testing}. Mock plugins are loaded
+into the configuration and provide simple commands.
 
 The first test is a test of parsing a simple call of a command. The abstract syntactic tree produced by
 the parser has to be identical to the one manually constructed according to the way how the algorithm
@@ -1547,6 +1552,8 @@ regression, the problem was fixed with a commit containing documentation about i
 that this problem will not be re-introduced in any of the future releases. This approach is very
 useful and should be enforced on any future contributions or new features since it allows the project
 to be tested for real problems and extends test coverage.
+
+The complete test suite is available on the attached medium in the folder \textit{test}.
 
 \newpage
 

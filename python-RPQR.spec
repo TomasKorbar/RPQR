@@ -8,7 +8,7 @@ URL:            https://github.com/TomasKorbar/RPQR
 Source0:        RPQR.tgz
 
 BuildArch:      noarch
-Requires:       python3 python3-dnf
+Requires:       python3 python3-dnf python3-networkx python3-requests python3-matplotlib
 BuildRequires:  python3 python3-devel sed python3-wheel
 BuildRequires:  pip python3-setuptools python3-dnf python3-networkx python3-requests
 

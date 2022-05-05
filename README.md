@@ -39,5 +39,5 @@ url=https://src.fedoraproject.org/extras/pagure_owner_alias.json
 
 Then you can execute your queries through CLI interface and get visualized results.
 ```
-$ RPQR --cfgPath example.conf "NAMELIKE('libyang')" --visualize --filterattributes "name"
+$ RPQR --cfgpath example.conf "NAMELIKE('libyang')" --visualize --filterattributes "name"
 ```
