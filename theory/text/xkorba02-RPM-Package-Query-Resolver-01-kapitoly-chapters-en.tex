@@ -613,7 +613,9 @@ and the second is a number. RPQR language does not consider whitespace character
 difference or problem with their presence in the query. Commands like this can have more advanced
 behavior and are generally more useful than the ones without arguments.
 
-Example of this type of command is: \textit{WHATDEPENDSON('libyang-1.0.225-1.fc34.x86\_64', 1)}
+Example of this type of command is:
+
+\textit{WHATDEPENDSON('libyang-1.0.225-1.fc34.x86\_64', 1)}
 
 \subsection*{Command accepting subset as an argument}
 
@@ -627,7 +629,9 @@ with a specific context. For a~better explanation of how the query could work, h
 The first command could gather packages that contain string \textit{cups} in their name. The second
 could then filter only three first by their name in alphabetical order.
 
-Example of this type of command is: \textit{SUBSETNAMELIKE('x86\_64', NAMELIKE('libyang'))}
+Example of this type of command is:
+
+\textit{SUBSETNAMELIKE('x86\_64', NAMELIKE('libyang'))}
 
 \newpage
 
@@ -1126,7 +1130,7 @@ the clarification of examples.
 
 \textbf{Example of use}
 
-RPQR "ONWHATDEPENDS('libyang-1.0.225-1.fc34.x86\_64', 1)" -{}-filterattributes "name" -{}-filterrelations "depends" -{}-visualize
+RPQR "ONWHATDEPENDS('libyang-1.0.225-1.fc34.x86\_64', 1)" \\ \linebreak -{}-filterattributes "name" -{}-filterrelations "depends" -{}-visualize
 
 \textbf{RPQR language}
 
@@ -1140,7 +1144,7 @@ of operators to create an appropriate combination of commands to get the results
 \begin{itemize}
   \item \& - package has to conform to both right and left statements
   \item  | - package has to conform to either left or right statements
-  \item  \textasciitilde - package must not conform to statement located on the right 
+  \item  \textasciitilde\space - package must not conform to statement located on the right 
 \end{itemize}
 
 \textbf{Parenthesis}

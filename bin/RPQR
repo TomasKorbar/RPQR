@@ -41,7 +41,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     cfgParser = configparser.ConfigParser()
-    cfgParser.read(args.cfgpath)
+    if len(cfgParser.read(args.cfgpath)) == 0:
+        sys.exit(1)
 
     pluginDirectories = json.loads(cfgParser["RPQR"]["pluginDirectories"])
     cacheFile = cfgParser["RPQR"]["cache"]
