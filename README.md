@@ -4,11 +4,6 @@ Author: Tomáš Korbař
 ## installation
 First you need to install python3-dnf package, because the module can be
 only installed through distribution package manager.
-If you do not want to perform system wide installation then i also recommend
-exporting project folder as python path to show project where its modules are located.
-```
-export PYTHONPATH=/current/folder
-```
 And then install scripts
 ```
 $ pip install .
